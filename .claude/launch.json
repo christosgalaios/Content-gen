@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["node_modules/@remotion/cli/remotion-cli.js", "studio", "--port", "3003"],
       "port": 3003
+    },
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "pipeline/dashboard/server.ts"],
+      "port": 3001
     }
   ]
 }
