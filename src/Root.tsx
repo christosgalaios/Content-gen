@@ -17,6 +17,8 @@ import { ListCountdown, ListCountdownSchema } from "./compositions/ListCountdown
 import { StoryTime, StoryTimeSchema } from "./compositions/StoryTime";
 import { TransitionReveal, TransitionRevealSchema } from "./compositions/TransitionReveal";
 import { QuizPoll, QuizPollSchema } from "./compositions/QuizPoll";
+import { MemberMilestone, MemberMilestoneSchema } from "./compositions/MemberMilestone";
+import { WeeklyRecap, WeeklyRecapSchema } from "./compositions/WeeklyRecap";
 
 // Re-export schemas for external use
 export {
@@ -34,6 +36,8 @@ export {
   StoryTimeSchema,
   TransitionRevealSchema,
   QuizPollSchema,
+  MemberMilestoneSchema,
+  WeeklyRecapSchema,
 };
 
 // --- Root ---
@@ -264,6 +268,41 @@ export const RemotionRoot: React.FC = () => {
             revealIndex: 2,
             revealLabel: "You chose...",
             ctaText: "Comment below!",
+          }}
+        />
+        <Composition
+          id="MemberMilestone-TikTok"
+          component={MemberMilestone}
+          durationInFrames={420}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={MemberMilestoneSchema}
+          defaultProps={{
+            milestone: 3000,
+            suffix: "",
+            preText: "We just hit...",
+            celebrationText: "members strong!",
+            thankYouText: "Thank you for being part of this",
+          }}
+        />
+        <Composition
+          id="WeeklyRecap-TikTok"
+          component={WeeklyRecap}
+          durationInFrames={450}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={WeeklyRecapSchema}
+          defaultProps={{
+            weekLabel: "This week at The Super Socializers",
+            events: [
+              { name: "Clifton Suspension Bridge Walk", attendees: 18 },
+              { name: "Speed Friending @ The Grain Barge", attendees: 24 },
+              { name: "Board Games Night", attendees: 12 },
+            ],
+            totalAttendees: 54,
+            ctaText: "Next week could be your first",
           }}
         />
       </Folder>

@@ -94,6 +94,8 @@ TikTok/Reels (1080x1920):
 - PhotoDump-TikTok: photos[] + title. Trending grid format.
 - TransitionReveal-TikTok: hookText + revealText + photo. Mask reveal style.
 - QuizPoll-TikTok: question + options[] + revealIndex. Engagement/comment-bait quiz format.
+- MemberMilestone-TikTok: milestone number + celebration text. Shareworthy milestone content.
+- WeeklyRecap-TikTok: weekLabel + events[] (name, attendees, photo). Weekly summary format.
 
 Instagram Posts (1080x1080):
 - EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta, PhotoDump-Insta
@@ -143,6 +145,8 @@ IMPORTANT for props:
 - PhotoDump: { title, photos: string[], ctaText }
 - TransitionReveal: { hookText, revealText, backgroundImage? }
 - QuizPoll: { question, options: string[], revealIndex: number, revealLabel?, ctaText? }
+- MemberMilestone: { milestone: number, suffix?, preText?, celebrationText?, thankYouText? }
+- WeeklyRecap: { weekLabel, events: [{name, photo?, attendees?}], totalAttendees?, ctaText? }
 
 Return ONLY a valid JSON object:
 {

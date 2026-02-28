@@ -62,6 +62,14 @@ const COMPOSITION_SCHEMAS: Record<string, { required: string[]; optional: string
     required: ["question", "options"],
     optional: ["revealIndex", "revealLabel", "ctaText"],
   },
+  "MemberMilestone": {
+    required: ["milestone"],
+    optional: ["suffix", "preText", "celebrationText", "thankYouText"],
+  },
+  "WeeklyRecap": {
+    required: ["weekLabel", "events"],
+    optional: ["totalAttendees", "ctaText"],
+  },
 };
 
 /**
