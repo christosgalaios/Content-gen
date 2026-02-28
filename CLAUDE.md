@@ -15,6 +15,15 @@ This is a **Remotion** project for generating social media video content for **T
 npm run dev        # Open Remotion Studio (preview + edit)
 npm run render     # Render a composition to MP4
 npx remotion render <CompositionId> out/<filename>.mp4
+
+# Autopilot pipeline
+npm run pipeline            # Run full pipeline (ingest → trends → plan → build → render)
+npm run pipeline:ingest     # Stage 1: Index content assets
+npm run pipeline:trends     # Stage 2: Scrape trending topics
+npm run pipeline:plan       # Stage 3: AI-plan video content
+npm run pipeline:build      # Stage 4: Build Remotion props
+npm run pipeline:render     # Stage 5: Batch render videos
+npm run pipeline:dry-run    # Plan without rendering
 ```
 
 ## Project Structure
@@ -27,8 +36,23 @@ src/
   compositions/       # Individual composition components (expand here)
   components/         # Shared UI components (text overlays, CTAs, etc.)
   lib/                # Utilities (easing, timing helpers)
+pipeline/
+  index.ts           # Pipeline CLI entry point
+  config.ts          # Pipeline configuration loader
+  brain/             # AI planning (composition picker, planner, prompts)
+  builder/           # Props generation + validation
+  ingest/            # Asset scanning, metadata extraction, tagging
+  renderer/          # Batch rendering + caption generation
+  trends/            # TikTok Creative Center + Claude trend scraping
+  db/                # SQLite database (better-sqlite3)
+  utils/             # Logger, Claude CLI client, ffprobe
+types/
+  pipeline.ts        # Pipeline config + stage types
+  content.ts         # Media item types
+  plan.ts            # Content plan types
+  trends.ts          # Trend data types
 public/
-  fonts/              # Custom fonts
+  assets/            # Event photos for compositions
 remotion.config.ts    # Webpack + TailwindCSS config
 tailwind.config.js    # Tailwind theme (brand colors, fonts)
 ```
@@ -45,9 +69,9 @@ tailwind.config.js    # Tailwind theme (brand colors, fonts)
 
 Compositions are organized in folders in `src/Root.tsx`:
 
-- **TikTok-Reels/** — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`
-- **Instagram-Posts/** — `EventPromo-Insta`, `PhotoMontage-Insta`
-- **Instagram-Stories/** — `EventPromo-Story`
+- **TikTok-Reels/** — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`, `CountdownEvent-TikTok`, `StatsShowcase-TikTok`, `BeforeAfter-TikTok`, `POVReveal-TikTok`, `ListCountdown-TikTok`, `StoryTime-TikTok`, `TransitionReveal-TikTok`, `PhotoDump-TikTok`
+- **Instagram-Posts/** — `EventPromo-Insta`, `PhotoMontage-Insta`, `StatsShowcase-Insta`, `PhotoDump-Insta`
+- **Instagram-Stories/** — `EventPromo-Story`, `Testimonial-Story`, `CountdownEvent-Story`
 
 Each composition has a Zod schema for its props, making them fully parameterizable.
 

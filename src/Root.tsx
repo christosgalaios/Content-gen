@@ -10,6 +10,12 @@ import { TextAnimation, TextAnimationSchema } from "./compositions/TextAnimation
 import { PhotoMontage, PhotoMontageSchema } from "./compositions/PhotoMontage";
 import { CountdownEvent, CountdownEventSchema } from "./compositions/CountdownEvent";
 import { StatsShowcase, StatsShowcaseSchema } from "./compositions/StatsShowcase";
+import { BeforeAfter, BeforeAfterSchema } from "./compositions/BeforeAfter";
+import { PhotoDump, PhotoDumpSchema } from "./compositions/PhotoDump";
+import { POVReveal, POVRevealSchema } from "./compositions/POVReveal";
+import { ListCountdown, ListCountdownSchema } from "./compositions/ListCountdown";
+import { StoryTime, StoryTimeSchema } from "./compositions/StoryTime";
+import { TransitionReveal, TransitionRevealSchema } from "./compositions/TransitionReveal";
 
 // Re-export schemas for external use
 export {
@@ -20,6 +26,12 @@ export {
   PhotoMontageSchema,
   CountdownEventSchema,
   StatsShowcaseSchema,
+  BeforeAfterSchema,
+  PhotoDumpSchema,
+  POVRevealSchema,
+  ListCountdownSchema,
+  StoryTimeSchema,
+  TransitionRevealSchema,
 };
 
 // --- Root ---
@@ -137,6 +149,99 @@ export const RemotionRoot: React.FC = () => {
             ctaText: "Be part of the story",
           }}
         />
+        <Composition
+          id="BeforeAfter-TikTok"
+          component={BeforeAfter}
+          durationInFrames={390}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={BeforeAfterSchema}
+          defaultProps={{
+            beforeText: "Before: scrolling alone at midnight",
+            afterText: "After: 10 new friends in 4 weeks",
+            revealText: "The Super Socializers",
+          }}
+        />
+        <Composition
+          id="POVReveal-TikTok"
+          component={POVReveal}
+          durationInFrames={435}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={POVRevealSchema}
+          defaultProps={{
+            hookText: "POV: You just moved to Bristol",
+            stages: [
+              "Week 1: Eating alone every night",
+              "Week 2: Finally show up to a walk",
+              "Week 3: Speed friending night",
+              "Week 4: 10 new friends, 3 group chats",
+            ],
+            ctaText: "Come alone. Leave with friends.",
+          }}
+        />
+        <Composition
+          id="ListCountdown-TikTok"
+          component={ListCountdown}
+          durationInFrames={495}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={ListCountdownSchema}
+          defaultProps={{
+            title: "5 reasons to join The Super Socializers",
+            items: [
+              "90% of people come alone",
+              "500+ events hosted since 2023",
+              "Hikes, pubs, games, festivals",
+              "Strictly platonic, zero drama",
+              "Bristol's friendliest community",
+            ],
+            ctaText: "Your next adventure starts here",
+          }}
+        />
+        <Composition
+          id="StoryTime-TikTok"
+          component={StoryTime}
+          durationInFrames={360}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={StoryTimeSchema}
+          defaultProps={{
+            storyText:
+              "I moved to Bristol knowing literally nobody. Spent two weeks eating alone. Then I found this group on Meetup. First event I almost didn't go. But I did. Best decision ever.",
+          }}
+        />
+        <Composition
+          id="TransitionReveal-TikTok"
+          component={TransitionReveal}
+          durationInFrames={420}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={TransitionRevealSchema}
+          defaultProps={{
+            hookText: "What if we told you...",
+            revealText: "2,900+ people found their crew here",
+          }}
+        />
+        <Composition
+          id="PhotoDump-TikTok"
+          component={PhotoDump}
+          durationInFrames={450}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={PhotoDumpSchema}
+          defaultProps={{
+            title: "This week's photo dump",
+            photos: [],
+            ctaText: "Join the adventure",
+          }}
+        />
       </Folder>
 
       {/* Instagram Posts (1:1) */}
@@ -188,6 +293,20 @@ export const RemotionRoot: React.FC = () => {
             ],
             headline: "By the numbers",
             ctaText: "Join us",
+          }}
+        />
+        <Composition
+          id="PhotoDump-Insta"
+          component={PhotoDump}
+          durationInFrames={450}
+          fps={30}
+          width={1080}
+          height={1080}
+          schema={PhotoDumpSchema}
+          defaultProps={{
+            title: "Weekend highlights",
+            photos: [],
+            ctaText: "This could be you",
           }}
         />
       </Folder>
