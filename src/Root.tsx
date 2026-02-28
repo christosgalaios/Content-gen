@@ -40,6 +40,19 @@ export {
   WeeklyRecapSchema,
 };
 
+// --- Duration override ---
+// When durationInSeconds is set in props, override the default frame count.
+const FPS = 30;
+const calcDuration = (defaultFrames: number) => ({
+  props,
+}: {
+  props: { durationInSeconds?: number };
+}) => ({
+  durationInFrames: props.durationInSeconds
+    ? Math.round(props.durationInSeconds * FPS)
+    : defaultFrames,
+});
+
 // --- Root ---
 
 export const RemotionRoot: React.FC = () => {
@@ -55,6 +68,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={EventPromoSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             eventName: "Saturday Bristol Walk",
             eventDate: "This Saturday",
@@ -72,6 +86,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={TestimonialSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             quote: "I moved to Bristol knowing nobody. Found this group and now I have an actual social life!",
             name: "Sarah",
@@ -86,6 +101,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={HookReelSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             hookText: "POV: You just moved to Bristol",
             bodyLines: [
@@ -105,6 +121,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={TextAnimationSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             lines: [
               "90% of people come alone",
@@ -125,6 +142,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={CountdownEventSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             eventName: "Speed Friending Night",
             daysLeft: 3,
@@ -145,6 +163,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={StatsShowcaseSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             stats: [
               { value: 2900, suffix: "+", label: "Members & counting" },
@@ -163,6 +182,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={BeforeAfterSchema}
+          calculateMetadata={calcDuration(390)}
           defaultProps={{
             beforeText: "Before: scrolling alone at midnight",
             afterText: "After: 10 new friends in 4 weeks",
@@ -177,6 +197,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={POVRevealSchema}
+          calculateMetadata={calcDuration(435)}
           defaultProps={{
             hookText: "POV: You just moved to Bristol",
             stages: [
@@ -197,6 +218,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={ListCountdownSchema}
+          calculateMetadata={calcDuration(495)}
           defaultProps={{
             title: "5 reasons to join The Super Socializers",
             items: [
@@ -217,6 +239,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={StoryTimeSchema}
+          calculateMetadata={calcDuration(360)}
           defaultProps={{
             storyText:
               "I moved to Bristol knowing literally nobody. Spent two weeks eating alone. Then I found this group on Meetup. First event I almost didn't go. But I did. Best decision ever.",
@@ -230,6 +253,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={TransitionRevealSchema}
+          calculateMetadata={calcDuration(420)}
           defaultProps={{
             hookText: "What if we told you...",
             revealText: "2,900+ people found their crew here",
@@ -243,6 +267,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={PhotoDumpSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             title: "This week's photo dump",
             photos: [],
@@ -257,6 +282,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={QuizPollSchema}
+          calculateMetadata={calcDuration(420)}
           defaultProps={{
             question: "Which event should we run next?",
             options: [
@@ -278,6 +304,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={MemberMilestoneSchema}
+          calculateMetadata={calcDuration(420)}
           defaultProps={{
             milestone: 3000,
             suffix: "",
@@ -294,6 +321,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={WeeklyRecapSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             weekLabel: "This week at The Super Socializers",
             events: [
@@ -317,6 +345,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1080}
           schema={EventPromoSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             eventName: "Speed Friending Night",
             eventDate: "Friday 7th March",
@@ -334,6 +363,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1080}
           schema={PhotoMontageSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             images: [],
             overlayText: "This could be your weekend",
@@ -348,6 +378,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1080}
           schema={StatsShowcaseSchema}
+          calculateMetadata={calcDuration(360)}
           defaultProps={{
             stats: [
               { value: 2900, suffix: "+", label: "Members" },
@@ -366,6 +397,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1080}
           schema={PhotoDumpSchema}
+          calculateMetadata={calcDuration(450)}
           defaultProps={{
             title: "Weekend highlights",
             photos: [],
@@ -384,6 +416,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={EventPromoSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             eventName: "Sunday Board Games",
             eventDate: "This Sunday",
@@ -401,6 +434,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={TestimonialSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             quote: "Best decision I made this year. Met my whole friend group through Super Socializers!",
             name: "James",
@@ -415,6 +449,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={CountdownEventSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             eventName: "Friday Pub Quiz",
             daysLeft: 2,
@@ -430,6 +465,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={StatsShowcaseSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             stats: [
               { value: 2900, suffix: "+", label: "Members" },
@@ -448,6 +484,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={MemberMilestoneSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             milestone: 3000,
             suffix: "",
@@ -464,6 +501,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={WeeklyRecapSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             weekLabel: "This week's highlights",
             events: [
@@ -482,6 +520,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={HookReelSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             hookText: "POV: You just moved to Bristol",
             bodyLines: [
@@ -501,6 +540,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={BeforeAfterSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             beforeText: "Before: Netflix every Friday",
             afterText: "After: Plans every weekend",
@@ -515,6 +555,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={ListCountdownSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             title: "3 reasons to join this week",
             items: [
@@ -533,6 +574,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={QuizPollSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             question: "What should our next event be?",
             options: [
@@ -553,6 +595,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={StoryTimeSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             storyText:
               "Moved to Bristol two months ago. Knew nobody. Found this group. Now I have weekend plans every single week.",
@@ -566,6 +609,7 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={TransitionRevealSchema}
+          calculateMetadata={calcDuration(300)}
           defaultProps={{
             hookText: "What if we told you...",
             revealText: "2,900+ people found their crew here",

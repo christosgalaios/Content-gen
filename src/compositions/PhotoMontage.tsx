@@ -20,6 +20,7 @@ import { sec, buildScenes } from "../lib/timing";
 import { snappyOut } from "../lib/easing";
 
 export const PhotoMontageSchema = z.object({
+  durationInSeconds: z.number().optional(),
   images: z.array(z.string()),
   overlayText: z.string().optional(),
   ctaText: z.string().default("Join 2,900+ members on Meetup"),

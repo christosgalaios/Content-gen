@@ -12,11 +12,12 @@ import { AnimatedText } from "../components/AnimatedText";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { pulseScale, staggerDelay } from "../lib/effects";
 import { snappyOut } from "../lib/easing";
 
 export const QuizPollSchema = z.object({
+  durationInSeconds: z.number().optional(),
   question: z.string().default("Which event should we run next?"),
   options: z.array(z.string()).default([
     "Sunset hike",
@@ -38,12 +39,14 @@ export const QuizPoll: React.FC<Props> = ({
   revealLabel,
   ctaText,
 }) => {
+  const { durationInFrames } = useVideoConfig();
+
   const hookDur = sec(2.5);
   const optionsDur = sec(5);
   const revealDur = sec(3);
   const ctaDur = sec(3.5);
 
-  const scenes = buildScenes([hookDur, optionsDur, revealDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, optionsDur, revealDur, ctaDur], durationInFrames);
   const [hookScene, optionsScene, revealScene, ctaScene] = scenes;
 
   const safeRevealIndex = Math.min(revealIndex, options.length - 1);

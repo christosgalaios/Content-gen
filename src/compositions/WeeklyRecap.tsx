@@ -15,9 +15,10 @@ import { PhotoScene } from "../components/PhotoScene";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 
 export const WeeklyRecapSchema = z.object({
+  durationInSeconds: z.number().optional(),
   weekLabel: z.string().default("This week at The Super Socializers"),
   events: z.array(z.object({
     name: z.string(),
@@ -40,13 +41,15 @@ export const WeeklyRecap: React.FC<Props> = ({
   totalAttendees,
   ctaText,
 }) => {
+  const { durationInFrames } = useVideoConfig();
+
   const hookDur = sec(2.5);
   const eventDur = sec(2.5);
   const totalEventsDur = events.length * eventDur;
   const statsDur = sec(3);
   const ctaDur = sec(3.5);
 
-  const scenes = buildScenes([hookDur, totalEventsDur, statsDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, totalEventsDur, statsDur, ctaDur], durationInFrames);
   const [hookScene, eventsScene, statsScene, ctaScene] = scenes;
 
   // Default photos to cycle through

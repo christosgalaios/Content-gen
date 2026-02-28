@@ -18,6 +18,7 @@
     "pipeline:events:scrape": "npx tsx pipeline/index.ts --stage events",
     "pipeline:events:plan": "npx tsx pipeline/index.ts --stage event-plan",
     "pipeline:events:dry-run": "npx tsx pipeline/index.ts --stage events-all --dry-run",
+    "pipeline:local": "npx tsx pipeline/index.ts --stage events-all --dry-run",
     "pipeline:tiktok-login": "npx tsx -e \"require('./pipeline/trends/tiktok-creative').saveTikTokSession()\"",
     "dashboard": "npx tsx pipeline/dashboard/server.ts"
   },

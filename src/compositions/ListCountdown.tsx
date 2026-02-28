@@ -3,16 +3,18 @@ import {
   AbsoluteFill,
   Sequence,
   useCurrentFrame,
+  useVideoConfig,
 } from "remotion";
 import { z } from "zod";
 import { AnimatedText } from "../components/AnimatedText";
 import { NumberedList } from "../components/NumberedList";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { pulseScale } from "../lib/effects";
 
 export const ListCountdownSchema = z.object({
+  durationInSeconds: z.number().optional(),
   title: z.string().default("5 reasons to join The Super Socializers"),
   items: z.array(z.string()).default([
     "90% of people come alone",
@@ -32,12 +34,13 @@ export const ListCountdown: React.FC<Props> = ({
   ctaText,
 }) => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
 
   const hookDur = sec(2.5);
   const listDur = sec(1.8) * items.length + sec(1);
   const ctaDur = sec(4);
 
-  const scenes = buildScenes([hookDur, listDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, listDur, ctaDur], durationInFrames);
   const [hookScene, listScene, ctaScene] = scenes;
 
   return (
