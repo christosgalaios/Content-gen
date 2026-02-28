@@ -30,3 +30,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx remotion compositions --quiet
+
+  auto-merge:
+    name: Auto-merge PR
+    needs: [typecheck, build]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable auto-merge and delete branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --auto --merge --delete-branch
