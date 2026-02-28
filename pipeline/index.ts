@@ -9,6 +9,7 @@ import { runTrends } from "./trends/trend-store";
 import { runPlan } from "./brain/planner";
 import { runBuild } from "./builder/props-builder";
 import { runRender } from "./renderer/batch-renderer";
+import { runEventIngest, runEventPlan } from "./brain/event-planner";
 
 interface CliArgs {
   stage: PipelineStage;
@@ -76,6 +77,11 @@ async function main() {
   if (args.videos) config.videosPerRun = args.videos;
   if (args.platform) config.platforms = [args.platform as any];
 
+  const isEventMode =
+    args.stage === "events" ||
+    args.stage === "event-plan" ||
+    args.stage === "events-all";
+
   console.log(`
 ╔══════════════════════════════════════════╗
 ║   SOCIALISE AUTOPILOT CONTENT GENERATOR  ║
@@ -83,6 +89,7 @@ async function main() {
 ║   Stage: ${args.stage.padEnd(10)}                      ║
 ║   Videos: ${(args.videos || config.videosPerRun).toString().padEnd(9)}                     ║
 ║   Dry run: ${args.dryRun ? "yes" : "no "}                           ║
+║   Mode: ${isEventMode ? "event-driven" : "generic     "}                    ║
 ╚══════════════════════════════════════════╝
 `);
 
@@ -91,37 +98,94 @@ async function main() {
   const shouldRun = (stage: PipelineStage) =>
     args.stage === "all" || args.stage === stage;
 
+  const shouldRunEvent = (stage: PipelineStage) =>
+    args.stage === "events-all" || args.stage === stage;
+
   try {
-    // Stage 1: Ingest
-    if (shouldRun("ingest")) {
-      results.push(await runStage("ingest", () => runIngest(config)));
-      if (!results[results.length - 1].success && args.stage === "ingest") {
-        return;
+    // ═══════════════════════════════════════
+    // EVENT-DRIVEN PIPELINE
+    // ═══════════════════════════════════════
+    if (isEventMode) {
+      // Stage E1: Scrape Meetup events
+      if (shouldRunEvent("events") || args.stage === "events-all") {
+        results.push(
+          await runStage("events", () => runEventIngest(config))
+        );
+        if (
+          !results[results.length - 1].success &&
+          args.stage === "events"
+        ) {
+          return;
+        }
+      }
+
+      // Stage E2: Scrape trends (for matching to events)
+      if (args.stage === "events-all") {
+        results.push(await runStage("trends", () => runTrends(config)));
+      }
+
+      // Stage E3: Generate per-event content plans
+      if (
+        shouldRunEvent("event-plan") ||
+        args.stage === "events-all"
+      ) {
+        results.push(
+          await runStage("event-plan", () =>
+            runEventPlan(config, args.dryRun)
+          )
+        );
+        if (args.dryRun) {
+          log.info("Dry run — skipping build and render stages");
+          return;
+        }
+      }
+
+      // Stage E4: Build props
+      if (args.stage === "events-all" && !args.dryRun) {
+        results.push(await runStage("build", () => runBuild(config)));
+      }
+
+      // Stage E5: Render
+      if (args.stage === "events-all" && !args.dryRun) {
+        results.push(await runStage("render", () => runRender(config)));
       }
     }
 
-    // Stage 2: Trends
-    if (shouldRun("trends")) {
-      results.push(await runStage("trends", () => runTrends(config)));
-    }
-
-    // Stage 3: Plan
-    if (shouldRun("plan")) {
-      results.push(await runStage("plan", () => runPlan(config, args.dryRun)));
-      if (args.dryRun) {
-        log.info("Dry run — skipping build and render stages");
-        return;
+    // ═══════════════════════════════════════
+    // GENERIC PIPELINE (original flow)
+    // ═══════════════════════════════════════
+    else {
+      // Stage 1: Ingest
+      if (shouldRun("ingest")) {
+        results.push(await runStage("ingest", () => runIngest(config)));
+        if (!results[results.length - 1].success && args.stage === "ingest") {
+          return;
+        }
       }
-    }
 
-    // Stage 4: Build
-    if (shouldRun("build") && !args.dryRun) {
-      results.push(await runStage("build", () => runBuild(config)));
-    }
+      // Stage 2: Trends
+      if (shouldRun("trends")) {
+        results.push(await runStage("trends", () => runTrends(config)));
+      }
 
-    // Stage 5: Render
-    if (shouldRun("render") && !args.dryRun) {
-      results.push(await runStage("render", () => runRender(config)));
+      // Stage 3: Plan
+      if (shouldRun("plan")) {
+        results.push(await runStage("plan", () => runPlan(config, args.dryRun)));
+        if (args.dryRun) {
+          log.info("Dry run — skipping build and render stages");
+          return;
+        }
+      }
+
+      // Stage 4: Build
+      if (shouldRun("build") && !args.dryRun) {
+        results.push(await runStage("build", () => runBuild(config)));
+      }
+
+      // Stage 5: Render
+      if (shouldRun("render") && !args.dryRun) {
+        results.push(await runStage("render", () => runRender(config)));
+      }
     }
 
     // Summary
