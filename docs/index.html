@@ -4,1052 +4,652 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Socialise Content Generator — Dashboard</title>
+  <title>Socialise — Video Generator</title>
   <style>
-    :root {
-      --orange: #FF6B35;
-      --blue: #004E89;
-      --yellow: #F7C948;
-      --dark: #1A1A2E;
-      --light: #F5F5F5;
-      --green: #22c55e;
-      --red: #ef4444;
-      --gray: #6b7280;
-      --card-bg: #ffffff;
-      --border: #e5e7eb;
-    }
-
+    :root { --orange: #FF6B35; --blue: #004E89; --yellow: #F7C948; --dark: #1A1A2E; --light: #F5F5F5; --green: #22c55e; --red: #ef4444; --gray: #6b7280; --card-bg: #fff; --border: #e5e7eb; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--light); color: var(--dark); line-height: 1.6; min-height: 100vh; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--light);
-      color: var(--dark);
-      line-height: 1.6;
-    }
+    header { background: var(--dark); color: white; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header .badge { background: var(--orange); color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    header .restart-btn { margin-left: auto; padding: 6px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; background: none; color: white; font-size: 12px; font-weight: 600; cursor: pointer; }
+    header .restart-btn:hover { background: rgba(255,255,255,0.1); }
 
-    header {
-      background: var(--dark);
-      color: white;
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .container { max-width: 680px; margin: 0 auto; padding: 32px 20px; }
 
-    header h1 { font-size: 20px; font-weight: 600; }
+    /* Steps indicator */
+    .steps { display: flex; gap: 4px; margin-bottom: 32px; }
+    .step-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+    .step-dot.done { background: var(--green); }
+    .step-dot.active { background: var(--orange); }
 
-    header .badge {
-      background: var(--orange);
-      color: white;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    /* Cards */
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; animation: fadeUp 0.3s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .card .sub { font-size: 13px; color: var(--gray); margin-bottom: 20px; }
 
-    header .badge-blue {
-      background: var(--blue);
-      color: white;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    /* Option grid */
+    .options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 600px) { .options { grid-template-columns: 1fr 1fr; } }
+    .opt-btn { padding: 16px 12px; border: 2px solid var(--border); border-radius: 10px; background: white; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .opt-btn:hover { border-color: var(--orange); box-shadow: 0 2px 12px rgba(255,107,53,0.1); }
+    .opt-btn.selected { border-color: var(--orange); background: #fff7ed; }
+    .opt-btn .opt-label { font-size: 14px; font-weight: 600; }
+    .opt-btn .opt-desc { font-size: 11px; color: var(--gray); margin-top: 4px; }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    /* Intent input */
+    .intent-input { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 16px; font-family: inherit; transition: border-color 0.15s; }
+    .intent-input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
+    .intent-input::placeholder { color: #c0c0c0; }
+    .suggestions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .sug-btn { padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; background: white; font-size: 12px; color: var(--gray); cursor: pointer; }
+    .sug-btn:hover { border-color: var(--orange); color: var(--orange); }
 
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0;
-      flex-wrap: wrap;
-    }
+    /* Status log */
+    .status-log { background: var(--dark); border-radius: 10px; padding: 20px; color: #a3e635; font-family: 'SF Mono','Fira Code',monospace; font-size: 13px; line-height: 2; min-height: 120px; }
+    .status-log .line { opacity: 0; animation: logIn 0.3s ease forwards; }
+    .status-log .line.dim { color: #4a5568; }
+    .status-log .line .check { color: var(--green); }
+    .status-log .line .arrow { color: var(--orange); }
+    .status-log .line .info { color: var(--yellow); }
+    @keyframes logIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
 
-    .tab {
-      padding: 10px 20px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--gray);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.15s;
-    }
+    /* Recommendation card */
+    .rec-card { border: 2px solid var(--orange); border-radius: 10px; padding: 20px; background: #fff7ed; margin-top: 16px; animation: fadeUp 0.3s ease; }
+    .rec-card h3 { font-size: 16px; font-weight: 700; color: var(--orange); }
+    .rec-card .rec-why { font-size: 13px; color: var(--gray); margin: 8px 0 16px; line-height: 1.6; }
 
-    .tab:hover { color: var(--dark); }
-    .tab.active {
-      color: var(--orange);
-      border-bottom-color: var(--orange);
-      font-weight: 600;
-    }
+    /* Form fields */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .field input, .field textarea, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,107,53,0.12); }
+    .field textarea { resize: vertical; min-height: 70px; }
+    .array-items { display: flex; flex-direction: column; gap: 4px; }
+    .array-item { display: flex; gap: 6px; }
+    .array-item input { flex: 1; }
+    .array-item button { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; color: var(--red); font-size: 12px; }
+    .array-item button:hover { background: #fef2f2; }
+    .add-btn { padding: 6px 12px; border: 1px dashed var(--border); border-radius: 6px; background: none; cursor: pointer; font-size: 12px; color: var(--gray); margin-top: 4px; width: 100%; }
+    .add-btn:hover { border-color: var(--orange); color: var(--orange); }
+    .stat-row { display: grid; grid-template-columns: 100px 60px 1fr 32px; gap: 6px; margin-bottom: 4px; }
+    .stat-row input { padding: 8px; font-size: 13px; }
+    .event-row { display: grid; grid-template-columns: 1fr 80px 32px; gap: 6px; margin-bottom: 4px; }
+    .event-row input { padding: 8px; font-size: 13px; }
+    .remove-btn { border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; color: var(--red); padding: 4px 8px; font-size: 12px; }
+    .remove-btn:hover { background: #fef2f2; }
 
-    .panel { display: none; }
-    .panel.active { display: block; }
+    /* Output */
+    .output-block { background: var(--dark); border-radius: 10px; padding: 16px; font-family: 'SF Mono','Fira Code',monospace; font-size: 13px; line-height: 1.6; color: #a3e635; white-space: pre-wrap; word-break: break-all; position: relative; margin-bottom: 12px; }
+    .output-block.json { color: #7dd3fc; }
+    .copy-btn { position: absolute; top: 8px; right: 8px; padding: 4px 10px; border: 1px solid #2a2a4a; border-radius: 4px; background: var(--dark); color: #888; font-size: 11px; cursor: pointer; }
+    .copy-btn:hover { color: white; border-color: #555; }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
 
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    .card h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--dark);
-    }
-
-    .card h3 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--blue);
-    }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-
-    @media (max-width: 768px) {
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 4px;
-      color: var(--gray);
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      margin-bottom: 12px;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--orange);
-      box-shadow: 0 0 0 2px rgba(255,107,53,0.15);
-    }
-
-    button.btn {
-      padding: 8px 20px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
+    /* Buttons */
+    .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .btn-primary { background: var(--orange); color: white; }
     .btn-primary:hover { background: #e55a2b; }
     .btn-secondary { background: var(--blue); color: white; }
     .btn-secondary:hover { background: #003a66; }
-    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn-ghost { background: none; border: 2px solid var(--border); color: var(--dark); }
+    .btn-ghost:hover { border-color: var(--dark); }
+    .btn-sm { padding: 8px 16px; font-size: 13px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .stat-box { text-align: center; padding: 16px; }
-
-    .stat-box .number {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--orange);
-    }
-
-    .stat-box .label {
-      font-size: 13px;
-      color: var(--gray);
-      margin-top: 4px;
-    }
-
-    .results-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .results-table th {
-      text-align: left;
-      padding: 8px 12px;
-      border-bottom: 2px solid var(--border);
-      color: var(--gray);
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-
-    .results-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .results-table tr:hover { background: #f9fafb; }
-
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-      margin: 1px;
-    }
-
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
     .tag-high { background: #fef3c7; color: #92400e; }
     .tag-medium { background: #dbeafe; color: #1e40af; }
     .tag-standard { background: #f3f4f6; color: #374151; }
-    .tag-tiktok { background: #1A1A2E; color: white; }
-    .tag-story { background: #8b5cf6; color: white; }
-    .tag-insta { background: #ec4899; color: white; }
     .tag-photos { background: #f59e0b; color: white; }
 
-    .score-bar {
-      display: inline-block;
-      height: 6px;
-      border-radius: 3px;
-      background: var(--orange);
-      vertical-align: middle;
-    }
+    .hidden { display: none !important; }
 
-    .batch-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .batch-item:last-child { border-bottom: none; }
-
-    .batch-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--orange);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: var(--gray);
-    }
-
-    .empty-state p { margin-top: 8px; }
-
-    .comp-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 10px;
-    }
-
-    .comp-card {
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 13px;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .comp-card:hover {
-      border-color: var(--orange);
-      box-shadow: 0 2px 8px rgba(255,107,53,0.1);
-    }
-
-    .comp-card .name {
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .comp-card .best-for {
-      font-size: 11px;
-      color: var(--gray);
-      margin-top: 6px;
-    }
-
-    .coverage-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .coverage-table th {
-      text-align: left;
-      padding: 8px 12px;
-      border-bottom: 2px solid var(--border);
-      color: var(--gray);
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .coverage-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-    }
-
-    .coverage-table td:first-child { text-align: left; font-weight: 500; }
-
-    .coverage-table .check { color: var(--green); font-weight: 700; }
-    .coverage-table .cross { color: var(--border); }
-
-    .pipeline-step {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .pipeline-step:last-child { border-bottom: none; }
-
-    .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--blue);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .step-info { flex: 1; }
-    .step-info .step-title { font-weight: 600; font-size: 14px; }
-    .step-info .step-desc { font-size: 12px; color: var(--gray); }
-    .step-info code {
-      background: var(--light);
-      padding: 1px 6px;
-      border-radius: 3px;
-      font-size: 11px;
-    }
-
-    .brand-swatch {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      display: inline-block;
-      border: 1px solid var(--border);
-    }
-
-    .footer {
-      text-align: center;
-      padding: 24px;
-      color: var(--gray);
-      font-size: 12px;
-    }
-
+    .footer { text-align: center; padding: 32px 20px; font-size: 12px; color: var(--gray); }
     .footer a { color: var(--blue); text-decoration: none; }
     .footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Socialise Content Generator</h1>
-    <span class="badge">Dashboard</span>
-    <span class="badge-blue">Static</span>
+    <h1>Socialise</h1>
+    <span class="badge">Video Generator</span>
+    <button class="restart-btn" onclick="restart()">New Video</button>
   </header>
 
   <div class="container">
-    <div class="tabs">
-      <button class="tab active" data-panel="overview">Overview</button>
-      <button class="tab" data-panel="picker">Composition Picker</button>
-      <button class="tab" data-panel="batch">Batch Generator</button>
-      <button class="tab" data-panel="compositions">All Compositions</button>
-      <button class="tab" data-panel="pipeline">Pipeline</button>
+    <div class="steps">
+      <div class="step-dot" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+      <div class="step-dot" id="dot-4"></div>
     </div>
 
-    <!-- OVERVIEW PANEL -->
-    <div id="overview" class="panel active">
-      <div class="grid-4">
-        <div class="card stat-box">
-          <div class="number" id="stat-compositions">--</div>
-          <div class="label">Compositions</div>
-        </div>
-        <div class="card stat-box">
-          <div class="number" id="stat-tiktok">--</div>
-          <div class="label">TikTok / Reels</div>
-        </div>
-        <div class="card stat-box">
-          <div class="number" id="stat-stories">--</div>
-          <div class="label">Stories</div>
-        </div>
-        <div class="card stat-box">
-          <div class="number" id="stat-posts">--</div>
-          <div class="label">Insta Posts</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <h2>Platform Coverage</h2>
-          <div id="coverage-table"></div>
-        </div>
-        <div class="card">
-          <h2>Engagement Tiers</h2>
-          <div id="engagement-breakdown"></div>
-        </div>
-      </div>
-
+    <!-- STEP 1: Platform -->
+    <div id="step-1">
       <div class="card">
-        <h2>Quick Actions</h2>
-        <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
-          Test the composition picker and batch generator directly in the browser.
-          For rendering, run <code>npm run dev</code> to open Remotion Studio.
-        </p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="switchTab('picker')">Test Picker</button>
-          <button class="btn btn-primary" onclick="switchTab('batch')">Generate Batch</button>
-          <button class="btn btn-secondary" onclick="switchTab('compositions')">Browse Compositions</button>
-          <button class="btn btn-secondary" onclick="switchTab('pipeline')">Pipeline Guide</button>
+        <h2>Where are you posting?</h2>
+        <div class="sub">Pick the platform this video is for.</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pickPlatform('tiktok')">
+            <div class="opt-label">TikTok / Reels</div>
+            <div class="opt-desc">9:16 vertical · 10-15s</div>
+          </button>
+          <button class="opt-btn" onclick="pickPlatform('instagram-stories')">
+            <div class="opt-label">Instagram Story</div>
+            <div class="opt-desc">9:16 vertical · 10s</div>
+          </button>
+          <button class="opt-btn" onclick="pickPlatform('instagram-posts')">
+            <div class="opt-label">Instagram Post</div>
+            <div class="opt-desc">1:1 square · 10s</div>
+          </button>
         </div>
       </div>
+    </div>
 
+    <!-- STEP 2: Describe -->
+    <div id="step-2" class="hidden">
       <div class="card">
-        <h2>Brand Colors</h2>
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <div style="text-align:center">
-            <div class="brand-swatch" style="background:#FF6B35"></div>
-            <div style="font-size:11px;color:var(--gray);margin-top:4px">#FF6B35</div>
-          </div>
-          <div style="text-align:center">
-            <div class="brand-swatch" style="background:#004E89"></div>
-            <div style="font-size:11px;color:var(--gray);margin-top:4px">#004E89</div>
-          </div>
-          <div style="text-align:center">
-            <div class="brand-swatch" style="background:#F7C948"></div>
-            <div style="font-size:11px;color:var(--gray);margin-top:4px">#F7C948</div>
-          </div>
-          <div style="text-align:center">
-            <div class="brand-swatch" style="background:#1A1A2E"></div>
-            <div style="font-size:11px;color:var(--gray);margin-top:4px">#1A1A2E</div>
-          </div>
-          <div style="text-align:center">
-            <div class="brand-swatch" style="background:#F5F5F5"></div>
-            <div style="font-size:11px;color:var(--gray);margin-top:4px">#F5F5F5</div>
+        <h2>What's the video about?</h2>
+        <div class="sub">Describe what you want to create. Be specific — mention the event, topic, or vibe.</div>
+        <input class="intent-input" id="intent-input" type="text" placeholder="e.g. countdown for Saturday's hiking event at Leigh Woods" />
+        <div class="suggestions">
+          <button class="sug-btn" onclick="fillIntent('promote upcoming speed friending event')">Speed friending promo</button>
+          <button class="sug-btn" onclick="fillIntent('pov hook about moving to Bristol and finding friends')">POV moving to Bristol</button>
+          <button class="sug-btn" onclick="fillIntent('countdown for this weekend hiking event')">Event countdown</button>
+          <button class="sug-btn" onclick="fillIntent('member testimonial social proof review')">Testimonial</button>
+          <button class="sug-btn" onclick="fillIntent('stats showcase milestone growth community numbers')">Stats showcase</button>
+          <button class="sug-btn" onclick="fillIntent('quiz poll engagement which event should we run next')">Quiz / Poll</button>
+          <button class="sug-btn" onclick="fillIntent('weekly recap highlights of this week events')">Weekly recap</button>
+          <button class="sug-btn" onclick="fillIntent('before after transformation joining the group')">Before / After</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="analyze-btn" onclick="analyze()">Analyze & Pick</button>
+          <button class="btn btn-ghost btn-sm" onclick="goToStep(1)">Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Analysis + Form -->
+    <div id="step-3" class="hidden">
+      <div class="card" id="analysis-card">
+        <h2>Analyzing your request...</h2>
+        <div class="status-log" id="status-log"></div>
+        <div id="recommendation" class="hidden"></div>
+        <div id="form-wrapper" class="hidden">
+          <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
+          <h2 style="margin-bottom:4px">Customize your video</h2>
+          <div class="sub">Tweak the props below or keep the defaults.</div>
+          <div id="form-fields"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="generate()">Generate Render Command</button>
+            <button class="btn btn-ghost btn-sm" onclick="goToStep(2)">Back</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- PICKER PANEL -->
-    <div id="picker" class="panel">
-      <div class="grid-2">
-        <div class="card">
-          <h2>Test Composition Picker</h2>
-          <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
-            Type a content intent and see how the picker ranks compositions by relevance.
-            Uses keyword matching, engagement tiers, and variety enforcement.
-          </p>
-
-          <label>Content Intent</label>
-          <input id="picker-intent" type="text" placeholder="e.g. pov hook about moving to Bristol" />
-
-          <label>Platform</label>
-          <select id="picker-platform">
-            <option value="tiktok">TikTok / Reels</option>
-            <option value="instagram-stories">Instagram Stories</option>
-            <option value="instagram-posts">Instagram Posts</option>
-          </select>
-
-          <label>Recently Used (comma-separated IDs, optional)</label>
-          <input id="picker-recent" type="text" placeholder="e.g. HookReel-TikTok, BeforeAfter-TikTok" />
-
-          <button class="btn btn-primary" onclick="runPicker()">Rank Compositions</button>
-
-          <div style="margin-top:16px">
-            <h3 style="font-size:13px;color:var(--gray);margin-bottom:8px">Try these:</h3>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('pov hook relatable moving to Bristol')">POV Hook</button>
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('upcoming hiking event countdown')">Event Countdown</button>
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('member testimonial social proof')">Testimonial</button>
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('quiz poll engagement comment bait')">Quiz/Poll</button>
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('stats milestone community growth')">Stats</button>
-              <button class="btn btn-sm btn-secondary" onclick="tryIntent('photo dump highlights visual showcase')">Photo Dump</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Results</h2>
-          <div id="picker-results">
-            <div class="empty-state">
-              <p>Enter an intent and click "Rank Compositions" to see scored results.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BATCH PANEL -->
-    <div id="batch" class="panel">
-      <div class="grid-2">
-        <div class="card">
-          <h2>Generate Diverse Batch</h2>
-          <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
-            Generate a diverse batch of compositions optimised for variety and engagement.
-            No two consecutive videos will use the same base composition.
-          </p>
-
-          <label>Number of Videos</label>
-          <input id="batch-count" type="number" value="7" min="1" max="15" />
-
-          <label>Platform</label>
-          <select id="batch-platform">
-            <option value="tiktok">TikTok / Reels</option>
-            <option value="instagram-stories">Instagram Stories</option>
-            <option value="instagram-posts">Instagram Posts</option>
-          </select>
-
-          <label>Recently Used (comma-separated, optional)</label>
-          <input id="batch-recent" type="text" placeholder="e.g. HookReel-TikTok" />
-
-          <button class="btn btn-primary" onclick="runBatch()">Generate Batch</button>
-        </div>
-
-        <div class="card">
-          <h2>Batch Results</h2>
-          <div id="batch-results">
-            <div class="empty-state">
-              <p>Click "Generate Batch" to see a diverse set of compositions.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- COMPOSITIONS PANEL -->
-    <div id="compositions" class="panel">
+    <!-- STEP 4: Output -->
+    <div id="step-4" class="hidden">
       <div class="card">
-        <h2>All Compositions by Platform</h2>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="loadCompositions('tiktok')">TikTok / Reels</button>
-          <button class="btn btn-secondary" onclick="loadCompositions('instagram-stories')">Stories</button>
-          <button class="btn btn-secondary" onclick="loadCompositions('instagram-posts')">Posts</button>
-          <button class="btn btn-sm" style="background:var(--dark);color:white" onclick="loadCompositions('all')">Show All</button>
-        </div>
-        <div id="comp-list">
-          <div class="empty-state"><p>Select a platform above.</p></div>
-        </div>
-      </div>
-    </div>
+        <h2>Your video is ready to render</h2>
+        <div class="sub" id="output-sub">—</div>
 
-    <!-- PIPELINE PANEL -->
-    <div id="pipeline" class="panel">
-      <div class="grid-2">
-        <div class="card">
-          <h2>Generic Pipeline</h2>
-          <p style="color:var(--gray);font-size:13px;margin-bottom:16px">
-            Batch content generation from content library + trending topics.
-          </p>
-          <div class="pipeline-step">
-            <div class="step-num">1</div>
-            <div class="step-info">
-              <div class="step-title">Ingest</div>
-              <div class="step-desc">Scan content folder, extract metadata <code>npm run pipeline:ingest</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">2</div>
-            <div class="step-info">
-              <div class="step-title">Trends</div>
-              <div class="step-desc">Scrape TikTok + Claude web search <code>npm run pipeline:trends</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">3</div>
-            <div class="step-info">
-              <div class="step-title">Plan</div>
-              <div class="step-desc">AI-plan video content with Claude <code>npm run pipeline:plan</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">4</div>
-            <div class="step-info">
-              <div class="step-title">Build</div>
-              <div class="step-desc">Generate Remotion props + validate <code>npm run pipeline:build</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">5</div>
-            <div class="step-info">
-              <div class="step-title">Render</div>
-              <div class="step-desc">Batch render videos to MP4 <code>npm run pipeline:render</code></div>
-            </div>
-          </div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Render Command</label>
+          <div class="output-block bash" id="out-cmd"></div>
+          <button class="copy-btn" onclick="copyEl('out-cmd')" style="position:relative;top:-4px">Copy command</button>
         </div>
 
-        <div class="card">
-          <h2>Event Pipeline</h2>
-          <p style="color:var(--gray);font-size:13px;margin-bottom:16px">
-            Per-event promotional batches from Meetup scraping.
-          </p>
-          <div class="pipeline-step">
-            <div class="step-num">1</div>
-            <div class="step-info">
-              <div class="step-title">Scrape Events</div>
-              <div class="step-desc">Extract upcoming events from Meetup <code>npm run pipeline:events:scrape</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">2</div>
-            <div class="step-info">
-              <div class="step-title">Match Trends</div>
-              <div class="step-desc">Filter global trends to each event type</div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">3</div>
-            <div class="step-info">
-              <div class="step-title">Plan per Event</div>
-              <div class="step-desc">Claude generates 2-5 promo videos per event <code>npm run pipeline:events:plan</code></div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">4</div>
-            <div class="step-info">
-              <div class="step-title">Schedule Posts</div>
-              <div class="step-desc">Optimal posting times relative to event date (7d, 5d, 3d, 1d before)</div>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-num">5</div>
-            <div class="step-info">
-              <div class="step-title">Build &amp; Render</div>
-              <div class="step-desc">Generate Remotion props and render <code>npm run pipeline:events</code></div>
-            </div>
-          </div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Props JSON</label>
+          <div class="output-block json" id="out-json" style="max-height:300px;overflow-y:auto"></div>
+          <button class="copy-btn" onclick="copyEl('out-json')" style="position:relative;top:-4px">Copy JSON</button>
         </div>
-      </div>
 
-      <div class="card">
-        <h2>Cloud ↔ Local Workflow</h2>
-        <div class="grid-2">
-          <div>
-            <h3>Cloud (GitHub Actions — daily cron)</h3>
-            <ul style="font-size:13px;color:var(--gray);margin-left:16px;line-height:2">
-              <li>Scrapes Meetup events with Playwright</li>
-              <li>Scrapes TikTok Creative Center trends</li>
-              <li>Commits updated <code>data/pipeline.db</code> to repo</li>
-              <li>No API keys needed — Playwright-only</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Local</h3>
-            <ul style="font-size:13px;color:var(--gray);margin-left:16px;line-height:2">
-              <li><code>git pull</code> — get latest scraped data</li>
-              <li><code>npm run pipeline:local</code> — Claude plans content</li>
-              <li><code>npm run pipeline:build</code> — generate Remotion props</li>
-              <li><code>npm run pipeline:render</code> — render videos to MP4</li>
-            </ul>
-          </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="downloadSh()">Download .sh</button>
+          <button class="btn btn-secondary" onclick="downloadJson()">Download .json</button>
+          <button class="btn btn-ghost" onclick="restart()">Make Another</button>
         </div>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <strong>The Super Socializers</strong> — Bristol, Bath, Cardiff &amp; Somerset's Friendliest Social Community
+    <strong>The Super Socializers</strong> — Bristol, Bath, Cardiff & Somerset
     <br/>
-    <a href="https://www.meetup.com/the-super-socializers-uk/" target="_blank" rel="noopener">Meetup</a> ·
-    <a href="https://www.tiktok.com/@supersocializers" target="_blank" rel="noopener">TikTok</a> ·
-    <a href="https://www.instagram.com/the_super_socializers/" target="_blank" rel="noopener">Instagram</a> ·
-    <a href="https://github.com/christosgalaios/Content-gen" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.meetup.com/the-super-socializers-uk/" target="_blank">Meetup</a> ·
+    <a href="https://www.tiktok.com/@supersocializers" target="_blank">TikTok</a> ·
+    <a href="https://www.instagram.com/the_super_socializers/" target="_blank">Instagram</a> ·
+    <a href="https://github.com/christosgalaios/Content-gen" target="_blank">GitHub</a>
   </div>
 
-  <script>
-    // ========================================================================
-    // COMPOSITION DATA (ported from pipeline/brain/composition-picker.ts)
-    // ========================================================================
-    const COMPOSITIONS = [
-      { id: "EventPromo", platforms: ["tiktok","instagram-reels","instagram-stories","instagram-posts"], bestFor: ["event-promotion","upcoming-event","announcement"], engagementTier: "medium", needsPhotos: false },
-      { id: "Testimonial", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["social-proof","member-story","review","testimonial"], engagementTier: "high", needsPhotos: false },
-      { id: "HookReel", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["pov","narrative","hook","story","progression","relatable"], engagementTier: "high", needsPhotos: false },
-      { id: "TextAnimation", platforms: ["tiktok","instagram-reels"], bestFor: ["message","text-only","awareness","values","brand"], engagementTier: "standard", needsPhotos: false },
-      { id: "CountdownEvent", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["urgency","countdown","limited-spots","deadline","fomo"], engagementTier: "high", needsPhotos: false },
-      { id: "StatsShowcase", platforms: ["tiktok","instagram-reels","instagram-stories","instagram-posts"], bestFor: ["numbers","stats","social-proof","milestones","growth"], engagementTier: "medium", needsPhotos: false },
-      { id: "PhotoMontage", platforms: ["instagram-posts"], bestFor: ["photo-showcase","highlights","recap","montage"], engagementTier: "medium", needsPhotos: true },
-      { id: "POVReveal", platforms: ["tiktok","instagram-reels"], bestFor: ["pov","relatable","story-arc","discovery","journey"], engagementTier: "high", needsPhotos: true },
-      { id: "BeforeAfter", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["transformation","before-after","contrast","glow-up"], engagementTier: "high", needsPhotos: false },
-      { id: "ListCountdown", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["listicle","reasons","tips","information","list","top"], engagementTier: "medium", needsPhotos: false },
-      { id: "StoryTime", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["storytime","caption-driven","narrative","personal"], engagementTier: "high", needsPhotos: false },
-      { id: "PhotoDump", platforms: ["tiktok","instagram-reels","instagram-posts"], bestFor: ["photo-dump","highlights","visual-showcase","dump"], engagementTier: "medium", needsPhotos: true },
-      { id: "TransitionReveal", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["reveal","surprise","transition","hook","dramatic"], engagementTier: "high", needsPhotos: false },
-      { id: "QuizPoll", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["quiz","poll","engagement","comment-bait","interactive","question"], engagementTier: "high", needsPhotos: false },
-      { id: "MemberMilestone", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["milestone","celebration","growth","community","achievement"], engagementTier: "medium", needsPhotos: false },
-      { id: "WeeklyRecap", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["recap","weekly","summary","highlights","review"], engagementTier: "medium", needsPhotos: true },
-    ];
+<script>
+// ============================================================================
+// DATA
+// ============================================================================
+const COMPS = [
+  { id: "EventPromo", platforms: ["tiktok","instagram-reels","instagram-stories","instagram-posts"], bestFor: ["event-promotion","upcoming-event","announcement","promote","event"], engagementTier: "medium", needsPhotos: false, desc: "Bold event announcement with date, time, location" },
+  { id: "Testimonial", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["social-proof","member-story","review","testimonial","quote"], engagementTier: "high", needsPhotos: false, desc: "Member quote with name and join date" },
+  { id: "HookReel", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["pov","narrative","hook","story","progression","relatable","moving"], engagementTier: "high", needsPhotos: false, desc: "POV-style hook with progressive body lines" },
+  { id: "TextAnimation", platforms: ["tiktok","instagram-reels"], bestFor: ["message","text-only","awareness","values","brand","kinetic"], engagementTier: "standard", needsPhotos: false, desc: "Kinetic text animation with brand colors" },
+  { id: "CountdownEvent", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["urgency","countdown","limited-spots","deadline","fomo","days"], engagementTier: "high", needsPhotos: false, desc: "Countdown timer with spots-left urgency" },
+  { id: "StatsShowcase", platforms: ["tiktok","instagram-reels","instagram-stories","instagram-posts"], bestFor: ["numbers","stats","social-proof","milestones","growth","data"], engagementTier: "medium", needsPhotos: false, desc: "Animated stat counters with labels" },
+  { id: "PhotoMontage", platforms: ["instagram-posts"], bestFor: ["photo-showcase","highlights","recap","montage","gallery"], engagementTier: "medium", needsPhotos: true, desc: "Photo grid montage with overlay text" },
+  { id: "POVReveal", platforms: ["tiktok","instagram-reels"], bestFor: ["pov","relatable","story-arc","discovery","journey","reveal"], engagementTier: "high", needsPhotos: true, desc: "Multi-stage POV with photo reveals" },
+  { id: "BeforeAfter", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["transformation","before-after","contrast","glow-up","before","after"], engagementTier: "high", needsPhotos: false, desc: "Before/after contrast with dramatic reveal" },
+  { id: "ListCountdown", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["listicle","reasons","tips","information","list","top","why"], engagementTier: "medium", needsPhotos: false, desc: "Numbered list with animated items" },
+  { id: "StoryTime", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["storytime","caption-driven","narrative","personal","story"], engagementTier: "high", needsPhotos: false, desc: "Caption-style personal story" },
+  { id: "PhotoDump", platforms: ["tiktok","instagram-reels","instagram-posts"], bestFor: ["photo-dump","highlights","visual-showcase","dump","photos"], engagementTier: "medium", needsPhotos: true, desc: "Casual photo collection showcase" },
+  { id: "TransitionReveal", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["reveal","surprise","transition","hook","dramatic","twist"], engagementTier: "high", needsPhotos: false, desc: "Hook text with dramatic reveal transition" },
+  { id: "QuizPoll", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["quiz","poll","engagement","comment-bait","interactive","question","vote"], engagementTier: "high", needsPhotos: false, desc: "Interactive quiz/poll with answer reveal" },
+  { id: "MemberMilestone", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["milestone","celebration","growth","community","achievement","members"], engagementTier: "medium", needsPhotos: false, desc: "Milestone celebration with counter" },
+  { id: "WeeklyRecap", platforms: ["tiktok","instagram-reels","instagram-stories"], bestFor: ["recap","weekly","summary","highlights","review","week"], engagementTier: "medium", needsPhotos: true, desc: "Weekly event roundup with attendee counts" },
+];
 
-    const ENGAGEMENT_WEIGHTS = { high: 3, medium: 2, standard: 1 };
+const SCHEMAS = {
+  EventPromo: [
+    { key: "eventName", label: "Event Name", type: "text", required: true, default: "Saturday Bristol Walk" },
+    { key: "eventDate", label: "Date", type: "text", required: true, default: "This Saturday" },
+    { key: "eventTime", label: "Time", type: "text", required: true, default: "11:00 AM" },
+    { key: "eventLocation", label: "Location", type: "text", required: true, default: "Bristol Harbourside" },
+    { key: "eventType", label: "Type", type: "select", opts: ["Social","Hike","Pub Social","Speed Friending","Games","Comedy","Festival","Coffee Social","Walk","Activity"], default: "Social" },
+    { key: "memberCount", label: "Member Count", type: "text", default: "2,900+" },
+  ],
+  Testimonial: [
+    { key: "quote", label: "Quote", type: "textarea", required: true, default: "I moved to Bristol knowing nobody. Found this group and now I have an actual social life!" },
+    { key: "name", label: "Name", type: "text", required: true, default: "Sarah" },
+    { key: "memberSince", label: "Member Since", type: "text", default: "2023" },
+  ],
+  HookReel: [
+    { key: "hookText", label: "Hook", type: "text", required: true, default: "POV: You just moved to Bristol" },
+    { key: "bodyLines", label: "Body Lines", type: "array", default: ["Week 1: Eating alone every night","Week 2: Scrolling Meetup at 2am","Week 3: Finally show up to a walk","Week 4: 10 new friends, 3 group chats"] },
+    { key: "ctaText", label: "CTA", type: "text", default: "Come alone. Leave with friends." },
+  ],
+  TextAnimation: [
+    { key: "lines", label: "Lines", type: "array", default: ["90% of people come alone","That's totally normal","Zero pressure. Zero drama.","Just good vibes."] },
+    { key: "backgroundColor", label: "Background", type: "color", default: "#1A1A2E" },
+    { key: "textColor", label: "Text Color", type: "color", default: "#FFFFFF" },
+    { key: "accentColor", label: "Accent", type: "color", default: "#FF6B35" },
+  ],
+  CountdownEvent: [
+    { key: "eventName", label: "Event Name", type: "text", required: true, default: "Speed Friending Night" },
+    { key: "daysLeft", label: "Days Left", type: "number", default: 3 },
+    { key: "spotsLeft", label: "Spots Left", type: "number", default: 12 },
+    { key: "eventType", label: "Type", type: "select", opts: ["Social","Hike","Pub Social","Speed Friending","Games","Comedy","Quiz Night","Festival"], default: "Speed Friending" },
+    { key: "highlights", label: "Highlights", type: "array", default: ["Meet 20+ new people","Structured icebreakers","Drinks & good vibes"] },
+  ],
+  StatsShowcase: [
+    { key: "headline", label: "Headline", type: "text", default: "The Super Socializers" },
+    { key: "stats", label: "Stats", type: "stats", default: [{ value: 2900, suffix: "+", label: "Members & counting" },{ value: 90, suffix: "%", label: "Come alone" },{ value: 500, suffix: "+", label: "Events hosted" }] },
+    { key: "ctaText", label: "CTA", type: "text", default: "Be part of the story" },
+  ],
+  PhotoMontage: [
+    { key: "images", label: "Image Paths (staticFile)", type: "array", default: [] },
+    { key: "overlayText", label: "Overlay Text", type: "text", default: "This could be your weekend" },
+    { key: "ctaText", label: "CTA", type: "text", default: "Join 2,900+ members on Meetup" },
+  ],
+  POVReveal: [
+    { key: "hookText", label: "Hook", type: "text", default: "POV: You just moved to Bristol" },
+    { key: "stages", label: "Stages", type: "array", default: ["Week 1: Eating alone every night","Week 2: Finally show up to a walk","Week 3: Speed friending night","Week 4: 10 new friends, 3 group chats"] },
+    { key: "ctaText", label: "CTA", type: "text", default: "Come alone. Leave with friends." },
+    { key: "photos", label: "Photo Paths", type: "array", default: [] },
+  ],
+  BeforeAfter: [
+    { key: "beforeText", label: "Before", type: "text", default: "Before: scrolling alone at midnight" },
+    { key: "afterText", label: "After", type: "text", default: "After: 10 new friends in 4 weeks" },
+    { key: "revealText", label: "Reveal", type: "text", default: "The Super Socializers" },
+  ],
+  ListCountdown: [
+    { key: "title", label: "Title", type: "text", default: "5 reasons to join The Super Socializers" },
+    { key: "items", label: "List Items", type: "array", default: ["90% of people come alone","500+ events hosted since 2023","Hikes, pubs, games, festivals","Strictly platonic, zero drama","Bristol's friendliest community"] },
+    { key: "ctaText", label: "CTA", type: "text", default: "Your next adventure starts here" },
+  ],
+  StoryTime: [
+    { key: "storyText", label: "Story", type: "textarea", required: true, default: "I moved to Bristol knowing literally nobody. Spent two weeks eating alone. Then I found this group on Meetup. First event I almost didn't go. But I did. Best decision ever." },
+  ],
+  PhotoDump: [
+    { key: "title", label: "Title", type: "text", default: "This week's photo dump" },
+    { key: "photos", label: "Photo Paths", type: "array", default: [] },
+    { key: "ctaText", label: "CTA", type: "text", default: "Join the adventure" },
+  ],
+  TransitionReveal: [
+    { key: "hookText", label: "Hook", type: "text", default: "What if we told you..." },
+    { key: "revealText", label: "Reveal", type: "text", default: "2,900+ people found their crew here" },
+  ],
+  QuizPoll: [
+    { key: "question", label: "Question", type: "text", default: "Which event should we run next?" },
+    { key: "options", label: "Options", type: "array", default: ["Sunset hike","Board game night","Speed friending","Beach day trip"] },
+    { key: "revealIndex", label: "Reveal Answer (0-based index)", type: "number", default: 2 },
+    { key: "revealLabel", label: "Reveal Label", type: "text", default: "You chose..." },
+    { key: "ctaText", label: "CTA", type: "text", default: "Comment below!" },
+  ],
+  MemberMilestone: [
+    { key: "milestone", label: "Number", type: "number", default: 3000 },
+    { key: "suffix", label: "Suffix", type: "text", default: "" },
+    { key: "preText", label: "Pre Text", type: "text", default: "We just hit..." },
+    { key: "celebrationText", label: "Celebration", type: "text", default: "members strong!" },
+    { key: "thankYouText", label: "Thank You", type: "text", default: "Thank you for being part of this" },
+  ],
+  WeeklyRecap: [
+    { key: "weekLabel", label: "Week Label", type: "text", default: "This week at The Super Socializers" },
+    { key: "events", label: "Events", type: "events", default: [{ name: "Clifton Suspension Bridge Walk", attendees: 18 },{ name: "Speed Friending @ The Grain Barge", attendees: 24 },{ name: "Board Games Night", attendees: 12 }] },
+    { key: "totalAttendees", label: "Total Attendees", type: "number", default: 54 },
+    { key: "ctaText", label: "CTA", type: "text", default: "Next week could be your first" },
+  ],
+};
 
-    function platformSuffix(platform) {
-      switch (platform) {
-        case "tiktok":
-        case "instagram-reels": return "TikTok";
-        case "instagram-stories": return "Story";
-        case "instagram-posts": return "Insta";
-        default: return "TikTok";
+const ENGAGEMENT_W = { high: 3, medium: 2, standard: 1 };
+
+// ============================================================================
+// STATE
+// ============================================================================
+let state = { step: 1, platform: null, intent: "", picked: null, formValues: {} };
+
+function platformSuffix(p) {
+  if (p === "tiktok" || p === "instagram-reels") return "TikTok";
+  if (p === "instagram-stories") return "Story";
+  if (p === "instagram-posts") return "Insta";
+  return "TikTok";
+}
+
+function fullId(base) { return base + "-" + platformSuffix(state.platform); }
+
+// ============================================================================
+// STEP NAVIGATION
+// ============================================================================
+function goToStep(n) {
+  state.step = n;
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById("step-" + i).classList.toggle("hidden", i !== n);
+    const dot = document.getElementById("dot-" + i);
+    dot.className = "step-dot";
+    if (i < n) dot.classList.add("done");
+    if (i === n) dot.classList.add("active");
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function restart() {
+  state = { step: 1, platform: null, intent: "", picked: null, formValues: {} };
+  document.getElementById("intent-input").value = "";
+  goToStep(1);
+}
+
+// ============================================================================
+// STEP 1: PLATFORM
+// ============================================================================
+function pickPlatform(p) {
+  state.platform = p;
+  document.querySelectorAll("#step-1 .opt-btn").forEach(b => b.classList.remove("selected"));
+  event.currentTarget.classList.add("selected");
+  setTimeout(() => goToStep(2), 200);
+}
+
+// ============================================================================
+// STEP 2: INTENT
+// ============================================================================
+function fillIntent(text) {
+  document.getElementById("intent-input").value = text;
+  state.intent = text;
+}
+
+document.getElementById("intent-input").addEventListener("keypress", e => {
+  if (e.key === "Enter") analyze();
+});
+
+// ============================================================================
+// STEP 3: ANALYZE
+// ============================================================================
+function analyze() {
+  state.intent = document.getElementById("intent-input").value.trim();
+  if (!state.intent) { document.getElementById("intent-input").focus(); return; }
+
+  goToStep(3);
+
+  const log = document.getElementById("status-log");
+  const rec = document.getElementById("recommendation");
+  const form = document.getElementById("form-wrapper");
+  log.innerHTML = "";
+  rec.classList.add("hidden");
+  form.classList.add("hidden");
+  document.getElementById("analysis-card").querySelector("h2").textContent = "Analyzing your request...";
+
+  const platLabel = { tiktok: "TikTok / Reels", "instagram-stories": "Instagram Story", "instagram-posts": "Instagram Post" }[state.platform];
+
+  // Simulate analysis steps with delays
+  const steps = [];
+
+  steps.push({ delay: 300, text: '<span class="arrow">></span> Platform: <strong>' + platLabel + '</strong>' });
+  steps.push({ delay: 700, text: '<span class="arrow">></span> Intent: <em>"' + esc(state.intent) + '"</em>' });
+  steps.push({ delay: 1200, text: '<span class="check">✓</span> Extracted keywords from intent' });
+
+  // Do the actual ranking
+  const ranked = rankCompositions(state.intent, state.platform);
+
+  steps.push({ delay: 1800, text: '<span class="check">✓</span> Scored ' + COMPS.filter(c => c.platforms.includes(state.platform) || (state.platform === "tiktok" && c.platforms.includes("instagram-reels"))).length + ' compositions against your intent' });
+
+  if (ranked.length > 1) {
+    steps.push({ delay: 2200, text: '<span class="info">i</span> Runner-up: ' + ranked[1].id + ' (score ' + ranked[1].score + ')' });
+  }
+
+  if (ranked.length > 0) {
+    const best = ranked[0];
+    const comp = COMPS.find(c => c.id === best.baseName);
+    steps.push({ delay: 2600, text: '<span class="check">✓</span> Best match: <strong>' + best.id + '</strong> (score ' + best.score + ')' });
+
+    if (comp.needsPhotos) {
+      steps.push({ delay: 3000, text: '<span class="info">i</span> This composition needs photo assets' });
+    }
+
+    steps.push({ delay: 3200, text: '<span class="dim">---</span>' });
+    steps.push({ delay: 3200, action: () => showRecommendation(best, ranked) });
+  } else {
+    steps.push({ delay: 2400, text: '<span class="info">i</span> No strong match found. Try being more specific.' });
+  }
+
+  steps.forEach(s => {
+    setTimeout(() => {
+      if (s.text) {
+        const div = document.createElement("div");
+        div.className = "line";
+        div.style.animationDelay = "0s";
+        div.innerHTML = s.text;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
       }
-    }
+      if (s.action) s.action();
+    }, s.delay);
+  });
+}
 
-    function getCompositionId(baseName, platform) {
-      return baseName + "-" + platformSuffix(platform);
-    }
+function rankCompositions(intent, platform) {
+  const words = intent.toLowerCase().split(/[\s,;.!?]+/).filter(Boolean);
+  const results = [];
 
-    function getAvailableCompositions(platform) {
-      return COMPOSITIONS
-        .filter(c => c.platforms.includes(platform))
-        .map(c => getCompositionId(c.id, platform));
-    }
+  for (const c of COMPS) {
+    if (!c.platforms.includes(platform) && !(platform === "tiktok" && c.platforms.includes("instagram-reels"))) continue;
+    let score = 0;
+    const keyMatch = c.bestFor.filter(t => words.some(w => w.includes(t) || t.includes(w))).length;
+    score += keyMatch * 10;
+    const subMatch = c.bestFor.filter(t => intent.toLowerCase().includes(t)).length;
+    score += subMatch * 5;
+    score += ENGAGEMENT_W[c.engagementTier] || 1;
+    if (score > 0) results.push({ id: fullId(c.id), baseName: c.id, score, comp: c });
+  }
 
-    function getCompositionDetails(platform) {
-      return COMPOSITIONS
-        .filter(c => c.platforms.includes(platform))
-        .map(c => ({
-          id: getCompositionId(c.id, platform),
-          baseName: c.id,
-          needsPhotos: c.needsPhotos,
-          engagementTier: c.engagementTier,
-          bestFor: c.bestFor,
-        }));
-    }
+  return results.sort((a, b) => b.score - a.score);
+}
 
-    // ========================================================================
-    // COMPOSITION PICKER (client-side port)
-    // ========================================================================
-    function rankCompositions(intent, platform, recentlyUsed) {
-      const intentLower = intent.toLowerCase();
-      const intentWords = intentLower.split(/[\s,;.!?]+/).filter(Boolean);
-      const scored = [];
+function showRecommendation(best, allRanked) {
+  const comp = best.comp;
+  document.getElementById("analysis-card").querySelector("h2").textContent = "Analysis complete";
 
-      for (const comp of COMPOSITIONS) {
-        if (!comp.platforms.includes(platform)) continue;
+  const tierTag = '<span class="tag tag-' + comp.engagementTier + '">' + comp.engagementTier + ' engagement</span>';
+  const photosTag = comp.needsPhotos ? ' <span class="tag tag-photos">Needs Photos</span>' : '';
+  const others = allRanked.slice(1, 4).map(r => r.id).join(", ");
 
-        let score = 0;
+  let recHtml = '<div class="rec-card">';
+  recHtml += '<h3>' + best.id + '</h3>';
+  recHtml += '<div class="rec-why">' + comp.desc + '<br/>' + tierTag + photosTag + '</div>';
+  if (others) recHtml += '<div style="font-size:12px;color:var(--gray)">Also considered: ' + others + '</div>';
+  recHtml += '</div>';
 
-        const matchCount = comp.bestFor.filter(tag =>
-          intentWords.some(word => word.includes(tag) || tag.includes(word))
-        ).length;
-        score += matchCount * 10;
+  document.getElementById("recommendation").innerHTML = recHtml;
+  document.getElementById("recommendation").classList.remove("hidden");
 
-        const substringMatches = comp.bestFor.filter(tag => intentLower.includes(tag)).length;
-        score += substringMatches * 5;
+  // Set picked and init form
+  state.picked = best.baseName;
+  const schema = SCHEMAS[best.baseName];
+  state.formValues = {};
+  schema.forEach(f => { state.formValues[f.key] = JSON.parse(JSON.stringify(f.default)); });
 
-        score += ENGAGEMENT_WEIGHTS[comp.engagementTier] || 1;
+  // Show form
+  setTimeout(() => {
+    renderForm();
+    document.getElementById("form-wrapper").classList.remove("hidden");
+  }, 400);
+}
 
-        const fullId = getCompositionId(comp.id, platform);
-        if (recentlyUsed.includes(fullId)) score -= 15;
-        if (recentlyUsed.some(r => r.startsWith(comp.id + "-"))) score -= 8;
+// ============================================================================
+// FORM
+// ============================================================================
+function renderForm() {
+  const schema = SCHEMAS[state.picked];
+  if (!schema) return;
+  let html = '';
 
-        if (score > 0) {
-          scored.push({
-            compositionId: fullId,
-            score,
-            engagementTier: comp.engagementTier,
-            needsPhotos: comp.needsPhotos,
-            bestFor: comp.bestFor,
-          });
-        }
-      }
+  schema.forEach(f => {
+    html += '<div class="field">';
+    html += '<label>' + f.label + (f.required ? ' *' : '') + '</label>';
 
-      return scored.sort((a, b) => b.score - a.score);
-    }
-
-    // ========================================================================
-    // BATCH GENERATOR (client-side port)
-    // ========================================================================
-    function pickDiverseBatch(count, platform, recentlyUsed) {
-      const available = COMPOSITIONS.filter(c => c.platforms.includes(platform));
-      if (available.length === 0) return [];
-
-      const picks = [];
-      const usedInBatch = new Set();
-
-      const tiered = [...available].sort((a, b) => {
-        const diff = ENGAGEMENT_WEIGHTS[b.engagementTier] - ENGAGEMENT_WEIGHTS[a.engagementTier];
-        if (diff !== 0) return diff;
-        return Math.random() - 0.5;
-      });
-
-      for (let i = 0; i < count; i++) {
-        const lastPick = picks.length > 0 ? picks[picks.length - 1] : null;
-        const lastBase = lastPick ? lastPick.replace(/-(?:TikTok|Insta|Story)$/, "") : null;
-
-        let candidate = tiered.find(c => !usedInBatch.has(c.id) && c.id !== lastBase);
-        if (!candidate) candidate = tiered.find(c => c.id !== lastBase);
-        if (!candidate) candidate = tiered[i % tiered.length];
-
-        const fullId = getCompositionId(candidate.id, platform);
-        picks.push(fullId);
-        usedInBatch.add(candidate.id);
-      }
-
-      return picks;
-    }
-
-    function compositionNeedsPhotos(compositionId) {
-      const baseName = compositionId.replace(/-(?:TikTok|Insta|Story)$/, "");
-      const comp = COMPOSITIONS.find(c => c.id === baseName);
-      return comp ? comp.needsPhotos : false;
-    }
-
-    // ========================================================================
-    // TAB SWITCHING
-    // ========================================================================
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => switchTab(tab.dataset.panel));
-    });
-
-    function switchTab(panelId) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.querySelector('[data-panel="' + panelId + '"]')?.classList.add('active');
-      document.getElementById(panelId)?.classList.add('active');
-    }
-
-    // ========================================================================
-    // OVERVIEW
-    // ========================================================================
-    function loadOverview() {
-      const tiktokCount = getAvailableCompositions("tiktok").length;
-      const storyCount = getAvailableCompositions("instagram-stories").length;
-      const postCount = getAvailableCompositions("instagram-posts").length;
-      const total = tiktokCount + storyCount + postCount;
-
-      document.getElementById("stat-compositions").textContent = total;
-      document.getElementById("stat-tiktok").textContent = tiktokCount;
-      document.getElementById("stat-stories").textContent = storyCount;
-      document.getElementById("stat-posts").textContent = postCount;
-
-      // Coverage table
-      const platforms = ["tiktok", "instagram-stories", "instagram-posts"];
-      const pLabels = ["TikTok/Reels", "Story", "Post"];
-
-      let coverageHtml = '<table class="coverage-table"><tr><th>Composition</th>';
-      pLabels.forEach(l => coverageHtml += '<th>' + l + '</th>');
-      coverageHtml += '<th>Photos</th><th>Tier</th></tr>';
-
-      for (const comp of COMPOSITIONS) {
-        coverageHtml += '<tr><td>' + comp.id + '</td>';
-        for (const p of platforms) {
-          const has = comp.platforms.includes(p) || (p === "tiktok" && comp.platforms.includes("instagram-reels"));
-          coverageHtml += '<td class="' + (has ? 'check' : 'cross') + '">' + (has ? '✓' : '—') + '</td>';
-        }
-        coverageHtml += '<td>' + (comp.needsPhotos ? '<span class="tag tag-photos">Yes</span>' : '—') + '</td>';
-        const tierClass = 'tag-' + comp.engagementTier;
-        coverageHtml += '<td><span class="tag ' + tierClass + '">' + comp.engagementTier + '</span></td>';
-        coverageHtml += '</tr>';
-      }
-
-      coverageHtml += '</table>';
-      document.getElementById("coverage-table").innerHTML = coverageHtml;
-
-      // Engagement breakdown
-      const high = COMPOSITIONS.filter(c => c.engagementTier === "high").length;
-      const medium = COMPOSITIONS.filter(c => c.engagementTier === "medium").length;
-      const standard = COMPOSITIONS.filter(c => c.engagementTier === "standard").length;
-      const withPhotos = COMPOSITIONS.filter(c => c.needsPhotos).length;
-      const textOnly = COMPOSITIONS.filter(c => !c.needsPhotos).length;
-
-      document.getElementById("engagement-breakdown").innerHTML = '' +
-        '<div style="margin-bottom:16px">' +
-          '<h3>By Engagement Tier</h3>' +
-          '<div style="display:flex;gap:12px;margin-bottom:16px">' +
-            '<div style="flex:1;text-align:center;padding:12px;background:#fef3c7;border-radius:6px">' +
-              '<div style="font-size:24px;font-weight:700;color:#92400e">' + high + '</div>' +
-              '<div style="font-size:12px;color:#92400e">High</div>' +
-            '</div>' +
-            '<div style="flex:1;text-align:center;padding:12px;background:#dbeafe;border-radius:6px">' +
-              '<div style="font-size:24px;font-weight:700;color:#1e40af">' + medium + '</div>' +
-              '<div style="font-size:12px;color:#1e40af">Medium</div>' +
-            '</div>' +
-            '<div style="flex:1;text-align:center;padding:12px;background:#f3f4f6;border-radius:6px">' +
-              '<div style="font-size:24px;font-weight:700;color:#374151">' + standard + '</div>' +
-              '<div style="font-size:12px;color:#374151">Standard</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div>' +
-          '<h3>By Asset Requirement</h3>' +
-          '<div style="display:flex;gap:12px">' +
-            '<div style="flex:1;text-align:center;padding:12px;border:1px solid var(--border);border-radius:6px">' +
-              '<div style="font-size:24px;font-weight:700;color:var(--green)">' + textOnly + '</div>' +
-              '<div style="font-size:12px;color:var(--gray)">Text Only</div>' +
-            '</div>' +
-            '<div style="flex:1;text-align:center;padding:12px;border:1px solid var(--border);border-radius:6px">' +
-              '<div style="font-size:24px;font-weight:700;color:#f59e0b">' + withPhotos + '</div>' +
-              '<div style="font-size:12px;color:var(--gray)">Need Photos</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-    }
-
-    // ========================================================================
-    // PICKER UI
-    // ========================================================================
-    function tryIntent(intent) {
-      document.getElementById("picker-intent").value = intent;
-      runPicker();
-    }
-
-    function runPicker() {
-      const intent = document.getElementById("picker-intent").value.trim();
-      if (!intent) return;
-
-      const platform = document.getElementById("picker-platform").value;
-      const recentRaw = document.getElementById("picker-recent").value.trim();
-      const recentlyUsed = recentRaw ? recentRaw.split(",").map(s => s.trim()) : [];
-
-      const data = rankCompositions(intent, platform, recentlyUsed);
-
-      if (data.length === 0) {
-        document.getElementById("picker-results").innerHTML =
-          '<div class="empty-state"><p>No compositions matched that intent.</p></div>';
-        return;
-      }
-
-      const maxScore = data[0].score;
-      let html = '<table class="results-table">';
-      html += '<tr><th>#</th><th>Composition</th><th>Score</th><th></th><th>Tier</th></tr>';
-      data.forEach((r, i) => {
-        const barWidth = Math.max(4, (r.score / maxScore) * 120);
-        const tierClass = 'tag-' + r.engagementTier;
-        html += '<tr>';
-        html += '<td>' + (i + 1) + '</td>';
-        html += '<td><strong>' + r.compositionId + '</strong>';
-        if (r.needsPhotos) html += ' <span class="tag tag-photos">Photos</span>';
-        html += '<br/><span style="font-size:11px;color:var(--gray)">' + r.bestFor.join(', ') + '</span>';
-        html += '</td>';
-        html += '<td>' + r.score + '</td>';
-        html += '<td><span class="score-bar" style="width:' + barWidth + 'px"></span></td>';
-        html += '<td><span class="tag ' + tierClass + '">' + r.engagementTier + '</span></td>';
-        html += '</tr>';
-      });
-      html += '</table>';
-      html += '<p style="margin-top:12px;font-size:13px;color:var(--gray)">';
-      html += 'Top pick: <strong>' + data[0].compositionId + '</strong> (score: ' + data[0].score + ')';
-      html += '</p>';
-
-      document.getElementById("picker-results").innerHTML = html;
-    }
-
-    document.getElementById("picker-intent")?.addEventListener("keypress", e => {
-      if (e.key === "Enter") runPicker();
-    });
-
-    // ========================================================================
-    // BATCH UI
-    // ========================================================================
-    function runBatch() {
-      const count = parseInt(document.getElementById("batch-count").value) || 5;
-      const platform = document.getElementById("batch-platform").value;
-      const recentRaw = document.getElementById("batch-recent").value.trim();
-      const recentlyUsed = recentRaw ? recentRaw.split(",").map(s => s.trim()) : [];
-
-      const batch = pickDiverseBatch(count, platform, recentlyUsed);
-
-      if (!batch.length) {
-        document.getElementById("batch-results").innerHTML =
-          '<div class="empty-state"><p>No compositions available for this platform.</p></div>';
-        return;
-      }
-
-      let html = '';
-      batch.forEach((id, i) => {
-        const comp = COMPOSITIONS.find(c => c.id === id.replace(/-(?:TikTok|Insta|Story)$/, ""));
-        const needsPhotos = compositionNeedsPhotos(id);
-        const isRepeat = i > 0 && id.replace(/-\w+$/, "") === batch[i - 1].replace(/-\w+$/, "");
-        const tierClass = comp ? 'tag-' + comp.engagementTier : '';
-        const tier = comp ? comp.engagementTier : '';
-
-        html += '<div class="batch-item">';
-        html += '<div class="batch-num">' + (i + 1) + '</div>';
-        html += '<div style="flex:1">';
-        html += '<strong>' + id + '</strong>';
-        if (needsPhotos) html += ' <span class="tag tag-photos">Photos</span>';
-        if (tier) html += ' <span class="tag ' + tierClass + '">' + tier + '</span>';
-        if (isRepeat) html += ' <span style="color:var(--red);font-size:12px">(consecutive repeat!)</span>';
-        html += '</div>';
-        html += '</div>';
-      });
-
-      document.getElementById("batch-results").innerHTML = html;
-    }
-
-    // ========================================================================
-    // COMPOSITIONS BROWSER
-    // ========================================================================
-    function loadCompositions(platform) {
-      let details;
-      let label;
-
-      if (platform === "all") {
-        details = [];
-        const seen = new Set();
-        for (const p of ["tiktok", "instagram-stories", "instagram-posts"]) {
-          for (const d of getCompositionDetails(p)) {
-            if (!seen.has(d.id)) {
-              seen.add(d.id);
-              details.push(d);
-            }
-          }
-        }
-        label = "all platforms";
-      } else {
-        details = getCompositionDetails(platform);
-        label = platform;
-      }
-
-      let html = '<div class="comp-grid">';
-      details.forEach(c => {
-        const tierClass = 'tag-' + c.engagementTier;
-        html += '<div class="comp-card">';
-        html += '<div class="name">' + c.id + '</div>';
-        if (c.needsPhotos) html += '<span class="tag tag-photos">Needs Photos</span> ';
-        if (c.id.endsWith("-TikTok")) html += '<span class="tag tag-tiktok">TikTok</span> ';
-        if (c.id.endsWith("-Story")) html += '<span class="tag tag-story">Story</span> ';
-        if (c.id.endsWith("-Insta")) html += '<span class="tag tag-insta">Post</span> ';
-        html += '<span class="tag ' + tierClass + '">' + c.engagementTier + '</span>';
-        html += '<div class="best-for">' + c.bestFor.join(', ') + '</div>';
-        html += '</div>';
+    if (f.type === "text") {
+      html += '<input type="text" value="' + esc(String(state.formValues[f.key] || '')) + '" oninput="uf(\'' + f.key + '\',this.value)" />';
+    } else if (f.type === "textarea") {
+      html += '<textarea oninput="uf(\'' + f.key + '\',this.value)">' + esc(String(state.formValues[f.key] || '')) + '</textarea>';
+    } else if (f.type === "number") {
+      html += '<input type="number" value="' + (state.formValues[f.key] ?? '') + '" oninput="uf(\'' + f.key + '\',Number(this.value))" />';
+    } else if (f.type === "color") {
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += '<input type="color" value="' + (state.formValues[f.key] || '#000') + '" style="width:48px;height:36px;padding:2px;cursor:pointer;border:1px solid var(--border);border-radius:6px" oninput="uf(\'' + f.key + '\',this.value);this.nextElementSibling.value=this.value" />';
+      html += '<input type="text" value="' + esc(state.formValues[f.key] || '') + '" style="flex:1" oninput="uf(\'' + f.key + '\',this.value);this.previousElementSibling.value=this.value" />';
+      html += '</div>';
+    } else if (f.type === "select") {
+      html += '<select onchange="uf(\'' + f.key + '\',this.value)">';
+      (f.opts || []).forEach(o => { html += '<option' + (state.formValues[f.key] === o ? ' selected' : '') + '>' + o + '</option>'; });
+      html += '</select>';
+    } else if (f.type === "array") {
+      const arr = state.formValues[f.key] || [];
+      html += '<div class="array-items">';
+      arr.forEach((v, i) => {
+        html += '<div class="array-item"><input type="text" value="' + esc(v) + '" oninput="ua(\'' + f.key + '\',' + i + ',this.value)" /><button onclick="ra(\'' + f.key + '\',' + i + ')">x</button></div>';
       });
       html += '</div>';
-      html += '<p style="margin-top:12px;font-size:13px;color:var(--gray)">';
-      html += details.length + ' compositions for ' + label;
-      html += '</p>';
-
-      document.getElementById("comp-list").innerHTML = html;
+      html += '<button class="add-btn" onclick="aa(\'' + f.key + '\')">+ Add</button>';
+    } else if (f.type === "stats") {
+      const stats = state.formValues[f.key] || [];
+      html += '<div style="font-size:10px;color:var(--gray);display:grid;grid-template-columns:100px 60px 1fr 32px;gap:6px;margin-bottom:4px"><span>Value</span><span>Suffix</span><span>Label</span><span></span></div>';
+      stats.forEach((s, i) => {
+        html += '<div class="stat-row">';
+        html += '<input type="number" value="' + s.value + '" oninput="us(\'' + f.key + '\',' + i + ',\'value\',Number(this.value))" />';
+        html += '<input type="text" value="' + esc(s.suffix||'') + '" oninput="us(\'' + f.key + '\',' + i + ',\'suffix\',this.value)" />';
+        html += '<input type="text" value="' + esc(s.label) + '" oninput="us(\'' + f.key + '\',' + i + ',\'label\',this.value)" />';
+        html += '<button class="remove-btn" onclick="rs(\'' + f.key + '\',' + i + ')">x</button>';
+        html += '</div>';
+      });
+      html += '<button class="add-btn" onclick="as(\'' + f.key + '\')">+ Add stat</button>';
+    } else if (f.type === "events") {
+      const evts = state.formValues[f.key] || [];
+      html += '<div style="font-size:10px;color:var(--gray);display:grid;grid-template-columns:1fr 80px 32px;gap:6px;margin-bottom:4px"><span>Name</span><span>Attendees</span><span></span></div>';
+      evts.forEach((e, i) => {
+        html += '<div class="event-row">';
+        html += '<input type="text" value="' + esc(e.name) + '" oninput="ue(\'' + f.key + '\',' + i + ',\'name\',this.value)" />';
+        html += '<input type="number" value="' + (e.attendees||'') + '" oninput="ue(\'' + f.key + '\',' + i + ',\'attendees\',Number(this.value))" />';
+        html += '<button class="remove-btn" onclick="re(\'' + f.key + '\',' + i + ')">x</button>';
+        html += '</div>';
+      });
+      html += '<button class="add-btn" onclick="ae(\'' + f.key + '\')">+ Add event</button>';
     }
 
-    // ========================================================================
-    // INIT
-    // ========================================================================
-    loadOverview();
-  </script>
+    html += '</div>';
+  });
+
+  document.getElementById("form-fields").innerHTML = html;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function uf(k,v) { state.formValues[k] = v; }
+function ua(k,i,v) { state.formValues[k][i] = v; }
+function ra(k,i) { state.formValues[k].splice(i,1); renderForm(); }
+function aa(k) { state.formValues[k].push(""); renderForm(); }
+function us(k,i,p,v) { state.formValues[k][i][p] = v; }
+function rs(k,i) { state.formValues[k].splice(i,1); renderForm(); }
+function as(k) { state.formValues[k].push({value:0,suffix:"",label:""}); renderForm(); }
+function ue(k,i,p,v) { state.formValues[k][i][p] = v; }
+function re(k,i) { state.formValues[k].splice(i,1); renderForm(); }
+function ae(k) { state.formValues[k].push({name:"",attendees:0}); renderForm(); }
+
+// ============================================================================
+// STEP 4: GENERATE
+// ============================================================================
+function generate() {
+  const cid = fullId(state.picked);
+  const props = {};
+  const schema = SCHEMAS[state.picked];
+  schema.forEach(f => {
+    const v = state.formValues[f.key];
+    if (f.type === "array" && Array.isArray(v) && v.length === 0 && !f.required) return;
+    props[f.key] = v;
+  });
+
+  const propsJson = JSON.stringify(props, null, 2);
+  const propsInline = JSON.stringify(props).replace(/'/g, "'\\''");
+  const filename = cid.toLowerCase().replace(/[^a-z0-9]/g, '-') + '.mp4';
+  const cmd = "npx remotion render " + cid + " out/" + filename + " \\\n  --props='" + propsInline + "'";
+
+  document.getElementById("out-cmd").textContent = cmd;
+  document.getElementById("out-json").textContent = propsJson;
+  document.getElementById("output-sub").textContent = cid + " — ready to render locally with Remotion";
+
+  goToStep(4);
+}
+
+// ============================================================================
+// COPY / DOWNLOAD
+// ============================================================================
+function copyEl(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const block = document.getElementById(id);
+    const btn = block.parentElement.querySelector('.copy-btn');
+    if (btn) { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = btn.textContent.includes('command') ? 'Copy command' : 'Copy JSON'; btn.classList.remove('copied'); }, 1500); }
+  });
+}
+
+function downloadSh() {
+  const text = "#!/bin/bash\n# Generated by Socialise Video Generator\nmkdir -p out\n\n" + document.getElementById("out-cmd").textContent + "\n";
+  dl(text, "render.sh", "text/plain");
+}
+
+function downloadJson() {
+  dl(document.getElementById("out-json").textContent, "props.json", "application/json");
+}
+
+function dl(content, name, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name;
+  a.click();
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+goToStep(1);
+</script>
 </body>
 </html>
