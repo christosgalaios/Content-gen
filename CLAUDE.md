@@ -8,6 +8,8 @@ This is a **Remotion** project for generating social media video content for **T
 - **TailwindCSS** — Styling via `@remotion/tailwind`
 - **Zod** — Schema validation for composition props
 - **TypeScript** + **React**
+- **better-sqlite3** — Pipeline state / render tracking
+- **Claude CLI** — AI content planning via `claude --print`
 
 ## Commands
 
@@ -40,7 +42,11 @@ pipeline/
   index.ts           # Pipeline CLI entry point
   config.ts          # Pipeline configuration loader
   brain/             # AI planning (composition picker, planner, prompts)
+    composition-picker.ts  # Scored ranking, variety enforcement, batch diversity
+    planner.ts             # Claude-powered content plan generation
+    prompts.ts             # Prompt construction + content/trend summarization
   builder/           # Props generation + validation
+    schema-validator.ts    # Runtime prop validation against composition schemas
   ingest/            # Asset scanning, metadata extraction, tagging
   renderer/          # Batch rendering + caption generation
   trends/            # TikTok Creative Center + Claude trend scraping
@@ -48,9 +54,9 @@ pipeline/
   utils/             # Logger, Claude CLI client, ffprobe
 types/
   pipeline.ts        # Pipeline config + stage types
-  content.ts         # Media item types
-  plan.ts            # Content plan types
-  trends.ts          # Trend data types
+  content.ts         # Media item types (ContentItem, MediaMetadata)
+  plan.ts            # Content plan types (ContentPlan, ContentPlanItem, Platform)
+  trends.ts          # Trend data types (Trend, TrendMatch)
 public/
   assets/            # Event photos for compositions
 remotion.config.ts    # Webpack + TailwindCSS config
@@ -67,13 +73,70 @@ tailwind.config.js    # Tailwind theme (brand colors, fonts)
 
 ## Available Compositions
 
-Compositions are organized in folders in `src/Root.tsx`:
+Compositions are organized in folders in `src/Root.tsx`. There are 16 base compositions, registered across 3 platforms:
 
-- **TikTok-Reels/** — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`, `CountdownEvent-TikTok`, `StatsShowcase-TikTok`, `BeforeAfter-TikTok`, `POVReveal-TikTok`, `ListCountdown-TikTok`, `StoryTime-TikTok`, `TransitionReveal-TikTok`, `PhotoDump-TikTok`, `QuizPoll-TikTok`, `MemberMilestone-TikTok`, `WeeklyRecap-TikTok`
-- **Instagram-Posts/** — `EventPromo-Insta`, `PhotoMontage-Insta`, `StatsShowcase-Insta`, `PhotoDump-Insta`
-- **Instagram-Stories/** — `EventPromo-Story`, `Testimonial-Story`, `CountdownEvent-Story`, `StatsShowcase-Story`, `MemberMilestone-Story`, `WeeklyRecap-Story`
+- **TikTok-Reels/** (15) — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`, `CountdownEvent-TikTok`, `StatsShowcase-TikTok`, `BeforeAfter-TikTok`, `POVReveal-TikTok`, `ListCountdown-TikTok`, `StoryTime-TikTok`, `TransitionReveal-TikTok`, `PhotoDump-TikTok`, `QuizPoll-TikTok`, `MemberMilestone-TikTok`, `WeeklyRecap-TikTok`
+- **Instagram-Posts/** (4) — `EventPromo-Insta`, `PhotoMontage-Insta`, `StatsShowcase-Insta`, `PhotoDump-Insta`
+- **Instagram-Stories/** (13) — `EventPromo-Story`, `Testimonial-Story`, `CountdownEvent-Story`, `StatsShowcase-Story`, `MemberMilestone-Story`, `WeeklyRecap-Story`, `HookReel-Story`, `BeforeAfter-Story`, `ListCountdown-Story`, `QuizPoll-Story`, `StoryTime-Story`, `TransitionReveal-Story`
+
+### Platform coverage by composition
+
+| Composition | TikTok/Reels | Insta Post | Story | Needs Photos |
+|------------|:---:|:---:|:---:|:---:|
+| EventPromo | ✓ | ✓ | ✓ | No |
+| Testimonial | ✓ | — | ✓ | No |
+| HookReel | ✓ | — | ✓ | No |
+| TextAnimation | ✓ | — | — | No |
+| CountdownEvent | ✓ | — | ✓ | No |
+| StatsShowcase | ✓ | ✓ | ✓ | No |
+| PhotoMontage | — | ✓ | — | Yes |
+| POVReveal | ✓ | — | — | Yes |
+| BeforeAfter | ✓ | — | ✓ | No |
+| ListCountdown | ✓ | — | ✓ | No |
+| StoryTime | ✓ | — | ✓ | No |
+| PhotoDump | ✓ | ✓ | — | Yes |
+| TransitionReveal | ✓ | — | ✓ | No |
+| QuizPoll | ✓ | — | ✓ | No |
+| MemberMilestone | ✓ | — | ✓ | No |
+| WeeklyRecap | ✓ | — | ✓ | Yes |
+
+### Intentionally excluded variants
+- **TextAnimation** has no Story/Post variant — pure kinetic type works best full-screen on TikTok
+- **POVReveal** has no Story variant — multi-stage photo reveal is too long for ephemeral stories
+- **PhotoMontage** is Instagram Post only — designed for 1:1 grid format
+- **PhotoDump** has no Story variant — grid layout doesn't fit the swipe-through story UX
 
 Each composition has a Zod schema for its props, making them fully parameterizable.
+
+---
+
+## Pipeline Intelligence
+
+### Composition Picker (`pipeline/brain/composition-picker.ts`)
+
+The picker uses scored ranking to select compositions:
+- **Keyword matching** — intent words matched against each composition's `bestFor` tags
+- **Engagement tiers** — compositions tagged `high`/`medium`/`standard` based on expected engagement
+- **Variety enforcement** — recently-used compositions are penalized in scoring
+- **Batch diversity** — `pickDiverseBatch()` ensures no two consecutive videos use the same composition and balances engagement tiers
+- **Photo awareness** — `compositionNeedsPhotos()` flags compositions that require media assets
+
+### Content Planner (`pipeline/brain/planner.ts`)
+
+The planner calls Claude with a structured prompt that includes:
+- Content library summary (with least-used assets highlighted for rotation)
+- Trend data grouped by category with relevance thresholds
+- Content mix targets (40% engagement / 30% social-proof / 30% event-promo)
+- CTA and hashtag rotation rules
+- Posting cadence guidelines
+- Validation: warns on duplicate compositions and missing photo assets
+
+### System Prompt Strategy
+
+The Claude system prompt emphasizes:
+- Scroll-stopping hooks (specific, not generic)
+- Emotional arcs: hook → tension/value → CTA
+- Prioritizing comments and shares over passive views
 
 ---
 
@@ -84,7 +147,6 @@ Each composition has a Zod schema for its props, making them fully parameterizab
 **The Super Socializers** — Bristol, Bath, Cardiff & Somerset's Friendliest Social Community.
 - ~2,900 Meetup members, 4.8/5 rating
 - Founded January 2023 by Ben (+ 13 organisers)
-- Future rebrand to **Socialise.** with companion app: https://github.com/christosgalaios/SocialiseApp
 
 ### Social Accounts
 
@@ -122,6 +184,8 @@ Each composition has a Zod schema for its props, making them fully parameterizab
 - "Join 2,900+ members on Meetup"
 - "Link in bio"
 - "Your next adventure starts here"
+- "Comment below!"
+- "Tag someone who needs this"
 
 ---
 
@@ -168,13 +232,16 @@ When creating new compositions or content:
 
 1. **Always use 30fps** — standard for social media
 2. **Keep videos 10-15 seconds** for TikTok (300-450 frames at 30fps)
-3. **Hook in first 2 seconds** — text or visual that stops the scroll
-4. **End with CTA** — always include a call to action
-5. **Use brand colors** — orange/blue/dark theme from tailwind config
-6. **Safe zones** — keep important content within center 90% (TikTok UI covers edges)
-7. **Text must be large** — minimum 48px equivalent for mobile readability
-8. **Animate with purpose** — use `useCurrentFrame()` and `interpolate()` for smooth motion
-9. **Include captions/text** — most social video is watched on mute
+3. **Stories are shorter** — 10 seconds max (300 frames at 30fps)
+4. **Hook in first 2 seconds** — text or visual that stops the scroll
+5. **End with CTA** — always include a call to action
+6. **Use brand colors** — orange/blue/dark theme from tailwind config
+7. **Safe zones** — keep important content within center 90% (TikTok UI covers edges)
+8. **Text must be large** — minimum 48px equivalent for mobile readability
+9. **Animate with purpose** — use `useCurrentFrame()` and `interpolate()` for smooth motion
+10. **Include captions/text** — most social video is watched on mute
+11. **Rotate assets** — prefer least-used photos to keep content fresh
+12. **Vary compositions** — never repeat the same composition type in a batch
 
 ## Rendering
 
@@ -188,3 +255,27 @@ npx remotion render EventPromo-TikTok out/event-promo.mp4 --props='{"eventName":
 # Render as still image (for Instagram posts)
 npx remotion still EventPromo-Insta out/event-promo.png
 ```
+
+---
+
+## Prerequisites
+
+The pipeline requires these system dependencies:
+- **Node.js** — v18+ with npm
+- **ffmpeg / ffprobe** — on system PATH for media metadata extraction
+- **Claude CLI** — installed and authenticated (`claude --print` must work)
+- **better-sqlite3** — native module, needs `npm install` to compile
+
+Optional:
+- **Playwright** — for TikTok Creative Center trend scraping (`pipeline:trends` stage)
+- **Whisper.cpp** — for auto-captioning rendered videos (captions stage)
+
+---
+
+## Learnings & Known Issues
+
+- `contentFolder` in `pipeline/config.ts` uses a Windows absolute path — not portable across OSes. Override via `pipeline.config.json` if running on Linux/Mac.
+- Composition IDs follow the pattern `{BaseName}-{TikTok|Insta|Story}`. The schema validator strips the suffix to find the base schema.
+- The planner fetches the last 20 completed renders (not 10) to better avoid repetition.
+- All compositions share the same underlying React component regardless of platform — only dimensions and duration differ between TikTok and Story variants.
+- Instagram Post (1:1) variants need careful consideration — not all vertical compositions translate well to square format. Currently only 4 compositions support it.
