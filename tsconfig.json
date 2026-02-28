@@ -14,5 +14,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "remotion.config.ts", "pipeline/**/*.ts", "types/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "remotion.config.ts", "pipeline/**/*.ts", "types/**/*.ts"],
+  "exclude": ["docs-app"]
 }

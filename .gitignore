@@ -1,6 +1,7 @@
 node_modules/
 out/
 dist/
+docs/
 data/
 !data/pipeline.db
 !data/.gitkeep
