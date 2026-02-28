@@ -180,6 +180,7 @@ export const RemotionRoot: React.FC = () => {
               "Week 4: 10 new friends, 3 group chats",
             ],
             ctaText: "Come alone. Leave with friends.",
+            photos: [],
           }}
         />
         <Composition
