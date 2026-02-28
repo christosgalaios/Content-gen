@@ -16,6 +16,7 @@ This is a **Remotion** project for generating social media video content for **T
 ```bash
 npm run dev        # Open Remotion Studio (preview + edit)
 npm run render     # Render a composition to MP4
+npm run dashboard  # Open local dashboard at http://localhost:3333
 npx remotion render <CompositionId> out/<filename>.mp4
 
 # Autopilot pipeline (generic batch)
@@ -57,6 +58,9 @@ pipeline/
     prompts.ts             # Prompt construction + content/trend/event summarization
   builder/           # Props generation + validation
     schema-validator.ts    # Runtime prop validation against composition schemas
+  dashboard/         # Local dashboard server + static HTML
+    server.ts              # Lightweight HTTP server on port 3333
+    public/index.html      # Local dashboard with API-backed features
   ingest/            # Asset scanning, metadata extraction, tagging
   renderer/          # Batch rendering + caption generation
   trends/            # TikTok Studio/Creative Center + Claude trend scraping + Meetup events
@@ -74,8 +78,17 @@ types/
   plan.ts            # Content plan types (ContentPlan, ContentPlanItem, Platform)
   trends.ts          # Trend data types (Trend, TrendMatch)
   event.ts           # Meetup event types (MeetupEvent, EventType)
+docs/
+  index.html         # Static GitHub Pages dashboard (no server needed)
 public/
   assets/            # Event photos for compositions
+data/
+  pipeline.db        # SQLite DB (tracked in git, updated by cloud pipeline)
+.github/workflows/
+  ci.yml             # TypeScript + Remotion build checks + auto-merge
+  cd.yml             # Automated releases on merge to main
+  pages.yml          # Deploy docs/ to GitHub Pages on push to main
+  scheduled-pipeline.yml  # Daily cron: Meetup + TikTok scraping
 remotion.config.ts    # Webpack + TailwindCSS config
 tailwind.config.js    # Tailwind theme (brand colors, fonts)
 ```
@@ -309,6 +322,51 @@ The pipeline requires these system dependencies:
 Optional:
 - **Playwright** — for TikTok Creative Center trend scraping (`pipeline:trends` stage)
 - **Whisper.cpp** — for auto-captioning rendered videos (captions stage)
+
+---
+
+## Dashboard
+
+Two dashboard versions exist:
+
+### GitHub Pages (static)
+- **URL**: `https://christosgalaios.github.io/Content-gen/`
+- **Source**: `docs/index.html`
+- **Deployed by**: `.github/workflows/pages.yml` (on push to main when `docs/` changes)
+- **Features**: Composition browser, composition picker (client-side scoring), batch generator, pipeline guide, platform coverage table
+- **No server needed** — all composition data + picker logic is embedded in client-side JavaScript
+
+### Local Dashboard (server-backed)
+- **URL**: `http://localhost:3333`
+- **Run**: `npm run dashboard`
+- **Source**: `pipeline/dashboard/server.ts` + `pipeline/dashboard/public/index.html`
+- **Extra features**: Live DB stats (content items, trends, renders), recent plans/renders from SQLite
+
+### Keeping dashboards in sync
+When adding or modifying compositions in `pipeline/brain/composition-picker.ts`, update the `COMPOSITIONS` array in **both**:
+1. `pipeline/brain/composition-picker.ts` (server-side, used by pipeline + local dashboard)
+2. `docs/index.html` (client-side copy, used by GitHub Pages dashboard)
+
+---
+
+## CI/CD & Automation
+
+### Workflows (`.github/workflows/`)
+
+| Workflow | Trigger | What it does |
+|----------|---------|-------------|
+| `ci.yml` | Push to main, PRs | TypeScript typecheck + Remotion composition validation + auto-merge passing PRs |
+| `cd.yml` | Push to main | Creates date-tagged GitHub Release |
+| `pages.yml` | Push to main (when `docs/` changes) | Deploys static dashboard to GitHub Pages |
+| `scheduled-pipeline.yml` | Daily cron (8am UTC) | Scrapes Meetup events + TikTok trends, commits `data/pipeline.db` |
+
+### Cloud ↔ Local Workflow
+
+- **Cloud (GitHub Actions)**: Scrapes Meetup events + TikTok trends daily → commits updated `data/pipeline.db` (no API keys needed, Playwright-only)
+- **Local**: `git pull` → `npm run pipeline:local` (Claude plans content) → `npm run pipeline:build` → `npm run pipeline:render`
+
+### Auto-merge
+PRs auto-merge when CI passes (typecheck + Remotion build). Branch is auto-deleted after merge.
 
 ---
 
