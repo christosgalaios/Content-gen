@@ -20,7 +20,9 @@
     "pipeline:events:dry-run": "npx tsx pipeline/index.ts --stage events-all --dry-run",
     "pipeline:local": "npx tsx pipeline/index.ts --stage events-all --dry-run",
     "pipeline:tiktok-login": "npx tsx -e \"require('./pipeline/trends/tiktok-creative').saveTikTokSession()\"",
-    "dashboard": "npx tsx pipeline/dashboard/server.ts"
+    "dashboard": "npx tsx pipeline/dashboard/server.ts",
+    "build:docs": "vite build --config vite.docs.config.ts",
+    "dev:docs": "vite dev --config vite.docs.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -46,5 +48,11 @@
     "tsx": "^4.19.3",
     "typescript": "^5.9.3",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@remotion/player": "4.0.429",
+    "@remotion/web-renderer": "4.0.429",
+    "@vitejs/plugin-react": "^4.5.2",
+    "vite": "^6.3.5"
   }
 }
