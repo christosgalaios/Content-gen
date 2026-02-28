@@ -422,6 +422,58 @@ export const RemotionRoot: React.FC = () => {
             highlights: [],
           }}
         />
+        <Composition
+          id="StatsShowcase-Story"
+          component={StatsShowcase}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={StatsShowcaseSchema}
+          defaultProps={{
+            stats: [
+              { value: 2900, suffix: "+", label: "Members" },
+              { value: 90, suffix: "%", label: "Come solo" },
+              { value: 48, suffix: "/5", label: "Rating" },
+            ],
+            headline: "The Super Socializers",
+            ctaText: "Swipe up to join",
+          }}
+        />
+        <Composition
+          id="MemberMilestone-Story"
+          component={MemberMilestone}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={MemberMilestoneSchema}
+          defaultProps={{
+            milestone: 3000,
+            suffix: "",
+            preText: "We just hit...",
+            celebrationText: "members!",
+            thankYouText: "Thank you!",
+          }}
+        />
+        <Composition
+          id="WeeklyRecap-Story"
+          component={WeeklyRecap}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={WeeklyRecapSchema}
+          defaultProps={{
+            weekLabel: "This week's highlights",
+            events: [
+              { name: "Saturday Hike", attendees: 15 },
+              { name: "Pub Quiz Night", attendees: 20 },
+            ],
+            totalAttendees: 35,
+            ctaText: "Join us next week",
+          }}
+        />
       </Folder>
     </>
   );

@@ -124,6 +124,30 @@ export function validateProps(
     }
   }
 
+  if (baseName === "QuizPoll" && props.options) {
+    if (!Array.isArray(props.options)) {
+      errors.push("options must be an array");
+    }
+  }
+
+  if (baseName === "ListCountdown" && props.items) {
+    if (!Array.isArray(props.items)) {
+      errors.push("items must be an array");
+    }
+  }
+
+  if (baseName === "WeeklyRecap" && props.events) {
+    if (!Array.isArray(props.events)) {
+      errors.push("events must be an array");
+    }
+  }
+
+  if (baseName === "MemberMilestone" && props.milestone !== undefined) {
+    if (typeof props.milestone !== "number") {
+      errors.push("milestone must be a number");
+    }
+  }
+
   if (errors.length > 0) {
     log.warn(`Validation errors for ${compositionId}: ${errors.join(", ")}`);
   }

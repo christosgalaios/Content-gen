@@ -101,7 +101,7 @@ Instagram Posts (1080x1080):
 - EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta, PhotoDump-Insta
 
 Instagram Stories (1080x1920):
-- EventPromo-Story, Testimonial-Story, CountdownEvent-Story
+- EventPromo-Story, Testimonial-Story, CountdownEvent-Story, StatsShowcase-Story, MemberMilestone-Story, WeeklyRecap-Story
 
 ${recentRenders.length > 0 ? `RECENT RENDERS (avoid repetition):\n${recentRenders.join("\n")}` : "No recent renders."}
 
