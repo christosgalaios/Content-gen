@@ -1,6 +1,11 @@
 import { execSync, execFileSync } from "child_process";
 import { log } from "./logger";
 
+// Build a clean env without CLAUDECODE so the CLI doesn't refuse to start
+// when invoked from within a Claude Code session.
+const cleanEnv = { ...process.env };
+delete cleanEnv.CLAUDECODE;
+
 interface ClaudeRequest {
   prompt: string;
   systemPrompt?: string;
@@ -36,8 +41,9 @@ export function askClaude(request: ClaudeRequest): ClaudeResponse {
     const result = execFileSync("claude", args, {
       encoding: "utf-8",
       maxBuffer: 10 * 1024 * 1024, // 10MB
-      timeout: 120_000, // 2 minutes
+      timeout: 300_000, // 5 minutes
       stdio: ["pipe", "pipe", "pipe"],
+      env: cleanEnv,
     });
 
     const text = result.trim();
@@ -84,6 +90,7 @@ export function askClaudeVision(
       maxBuffer: 10 * 1024 * 1024,
       timeout: 180_000, // 3 minutes for vision
       stdio: ["pipe", "pipe", "pipe"],
+      env: cleanEnv,
     });
 
     const text = result.trim();
