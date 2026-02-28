@@ -7,6 +7,7 @@ import path from "path";
 export default defineConfig({
   root: "docs-app",
   base: "/Content-gen/",
+  publicDir: path.resolve(__dirname, "public"),
   plugins: [react()],
   resolve: {
     alias: {
