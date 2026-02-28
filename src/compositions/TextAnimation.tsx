@@ -17,6 +17,7 @@ import { pulseScale } from "../lib/effects";
 import { snappyOut } from "../lib/easing";
 
 export const TextAnimationSchema = z.object({
+  durationInSeconds: z.number().optional(),
   lines: z.array(z.string()),
   backgroundColor: zColor().default("#1A1A2E"),
   textColor: zColor().default("#FFFFFF"),

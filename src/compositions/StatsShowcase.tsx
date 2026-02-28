@@ -13,11 +13,12 @@ import { NumberCounter } from "../components/NumberCounter";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { pulseScale, staggerDelay } from "../lib/effects";
 import { snappyOut } from "../lib/easing";
 
 export const StatsShowcaseSchema = z.object({
+  durationInSeconds: z.number().optional(),
   stats: z.array(
     z.object({
       value: z.number(),
@@ -44,11 +45,11 @@ export const StatsShowcase: React.FC<Props> = ({
   const headlineTime = sec(2);
   const ctaTime = sec(4);
   const totalStatTime = statTime * stats.length;
-  const scenes = buildScenes([headlineTime, totalStatTime, ctaTime]);
+  const scenes = buildAdaptiveScenes([headlineTime, totalStatTime, ctaTime], durationInFrames);
   const [headlineScene, statsScene, ctaScene] = scenes;
 
   // Build individual stat scenes within the stats phase
-  const statScenes = buildScenes(stats.map(() => statTime));
+  const statScenes = buildAdaptiveScenes(stats.map(() => statTime), statsScene.duration);
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>

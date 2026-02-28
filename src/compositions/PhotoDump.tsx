@@ -14,10 +14,11 @@ import { AnimatedText } from "../components/AnimatedText";
 import { FlashTransition } from "../components/FlashTransition";
 import { GradientOverlay } from "../components/GradientOverlay";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { staggerDelay, pulseScale } from "../lib/effects";
 
 export const PhotoDumpSchema = z.object({
+  durationInSeconds: z.number().optional(),
   title: z.string().default("This week's photo dump"),
   photos: z.array(z.string()).default([]),
   ctaText: z.string().default("Join the adventure"),
@@ -30,12 +31,14 @@ export const PhotoDump: React.FC<Props> = ({
   photos,
   ctaText,
 }) => {
+  const { durationInFrames } = useVideoConfig();
+
   const hookDur = sec(2);
   const gridDur = sec(6);
   const zoomDur = sec(3);
   const ctaDur = sec(4);
 
-  const scenes = buildScenes([hookDur, gridDur, zoomDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, gridDur, zoomDur, ctaDur], durationInFrames);
   const [hookScene, gridScene, zoomScene, ctaScene] = scenes;
 
   // Default photos

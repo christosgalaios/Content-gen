@@ -13,10 +13,11 @@ import { NumberCounter } from "../components/NumberCounter";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { pulseScale } from "../lib/effects";
 
 export const MemberMilestoneSchema = z.object({
+  durationInSeconds: z.number().optional(),
   milestone: z.number().default(3000),
   suffix: z.string().default(""),
   preText: z.string().default("We just hit..."),
@@ -33,12 +34,14 @@ export const MemberMilestone: React.FC<Props> = ({
   celebrationText,
   thankYouText,
 }) => {
+  const { durationInFrames } = useVideoConfig();
+
   const hookDur = sec(2.5);
   const counterDur = sec(4);
   const celebrateDur = sec(3.5);
   const ctaDur = sec(4);
 
-  const scenes = buildScenes([hookDur, counterDur, celebrateDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, counterDur, celebrateDur, ctaDur], durationInFrames);
   const [hookScene, counterScene, celebrateScene, ctaScene] = scenes;
 
   return (

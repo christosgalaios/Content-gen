@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Sequence,
   useCurrentFrame,
+  useVideoConfig,
   interpolate,
   staticFile,
 } from "remotion";
@@ -12,10 +13,11 @@ import { PhotoScene } from "../components/PhotoScene";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { snappyOut } from "../lib/easing";
 
 export const BeforeAfterSchema = z.object({
+  durationInSeconds: z.number().optional(),
   beforeText: z.string().default("Before: scrolling alone at midnight"),
   afterText: z.string().default("After: 10 new friends in 4 weeks"),
   revealText: z.string().default("The Super Socializers"),
@@ -31,13 +33,14 @@ export const BeforeAfter: React.FC<Props> = ({
   backgroundImage,
 }) => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
 
   const beforeDur = sec(3.5);
   const transitionDur = sec(1.5);
   const afterDur = sec(4);
   const ctaDur = sec(4);
 
-  const scenes = buildScenes([beforeDur, transitionDur, afterDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([beforeDur, transitionDur, afterDur, ctaDur], durationInFrames);
   const [beforeScene, transScene, afterScene, ctaScene] = scenes;
 
   const imgSrc = backgroundImage

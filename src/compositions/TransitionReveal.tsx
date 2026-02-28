@@ -2,6 +2,7 @@ import React from "react";
 import {
   AbsoluteFill,
   Sequence,
+  useVideoConfig,
   staticFile,
 } from "remotion";
 import { z } from "zod";
@@ -10,9 +11,10 @@ import { PhotoScene } from "../components/PhotoScene";
 import { MaskReveal } from "../components/MaskReveal";
 import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 
 export const TransitionRevealSchema = z.object({
+  durationInSeconds: z.number().optional(),
   hookText: z.string().default("What if we told you..."),
   revealText: z.string().default("2,900+ people found their crew here"),
   backgroundImage: z.string().optional(),
@@ -25,12 +27,14 @@ export const TransitionReveal: React.FC<Props> = ({
   revealText,
   backgroundImage,
 }) => {
+  const { durationInFrames } = useVideoConfig();
+
   const hookDur = sec(3);
   const revealDur = sec(4);
   const textDur = sec(3);
   const ctaDur = sec(4);
 
-  const scenes = buildScenes([hookDur, revealDur, textDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, revealDur, textDur, ctaDur], durationInFrames);
   const [hookScene, revealScene, textScene, ctaScene] = scenes;
 
   const imgSrc = backgroundImage

@@ -17,10 +17,11 @@ import { Badge } from "../components/Badge";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
 import { kenBurns, pulseScale, fadeOut } from "../lib/effects";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { snappyOut } from "../lib/easing";
 
 export const EventPromoSchema = z.object({
+  durationInSeconds: z.number().optional(),
   eventName: z.string(),
   eventDate: z.string(),
   eventTime: z.string(),
@@ -45,8 +46,8 @@ export const EventPromo: React.FC<Props> = ({
   const { fps, durationInFrames, width, height } = useVideoConfig();
   const isVertical = height > width;
 
-  // Scene layout: hook (2.5s) → details (4s) → social proof (3.5s) → CTA (5s)
-  const scenes = buildScenes([sec(2.5), sec(4), sec(3.5), sec(5)]);
+  // Scene layout: hook → details → social proof → CTA (proportional to total duration)
+  const scenes = buildAdaptiveScenes([sec(2.5), sec(4), sec(3.5), sec(5)], durationInFrames);
   const [hookScene, detailScene, proofScene, ctaScene] = scenes;
 
   const bgSrc = backgroundImage || staticFile("assets/group-outdoor-1.jpg");

@@ -18,10 +18,11 @@ import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
 import { kenBurns, pulseScale, staggerDelay } from "../lib/effects";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { snappyOut } from "../lib/easing";
 
 export const CountdownEventSchema = z.object({
+  durationInSeconds: z.number().optional(),
   eventName: z.string(),
   daysLeft: z.number().default(3),
   spotsLeft: z.number().optional(),
@@ -48,8 +49,8 @@ export const CountdownEvent: React.FC<Props> = ({
   // Scenes: countdown (4s) → event name (3s) → highlights (4s) → CTA (4s)
   const hasHighlights = highlights.length > 0;
   const scenes = hasHighlights
-    ? buildScenes([sec(4), sec(3), sec(4), sec(4)])
-    : buildScenes([sec(4), sec(4), sec(7)]);
+    ? buildAdaptiveScenes([sec(4), sec(3), sec(4), sec(4)], durationInFrames)
+    : buildAdaptiveScenes([sec(4), sec(4), sec(7)], durationInFrames);
 
   const bgTransform = kenBurns(frame, {
     startFrame: 0,

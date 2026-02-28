@@ -24,6 +24,29 @@ export function buildScenes(durations: number[]): SceneDef[] {
   return scenes;
 }
 
+/**
+ * Build scenes that scale proportionally to fit a total frame count.
+ * Pass the same durations you'd give buildScenes — they act as proportional weights.
+ * The output scenes fill exactly `totalFrames`.
+ */
+export function buildAdaptiveScenes(
+  durations: number[],
+  totalFrames: number,
+): SceneDef[] {
+  const totalWeight = durations.reduce((s, d) => s + d, 0);
+  const scenes: SceneDef[] = [];
+  let cursor = 0;
+  for (let i = 0; i < durations.length; i++) {
+    const dur =
+      i === durations.length - 1
+        ? totalFrames - cursor // last scene absorbs rounding
+        : Math.round((durations[i] / totalWeight) * totalFrames);
+    scenes.push({ start: cursor, end: cursor + dur, duration: dur });
+    cursor += dur;
+  }
+  return scenes;
+}
+
 /** Get the local frame within a scene (0-based). Returns -1 if outside. */
 export function localFrame(globalFrame: number, scene: SceneDef): number {
   if (globalFrame < scene.start || globalFrame >= scene.end) return -1;

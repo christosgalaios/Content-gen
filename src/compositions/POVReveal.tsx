@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Sequence,
   useCurrentFrame,
+  useVideoConfig,
   staticFile,
 } from "remotion";
 import { z } from "zod";
@@ -11,9 +12,10 @@ import { PhotoScene } from "../components/PhotoScene";
 import { FlashTransition } from "../components/FlashTransition";
 import { Caption } from "../components/Caption";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 
 export const POVRevealSchema = z.object({
+  durationInSeconds: z.number().optional(),
   hookText: z.string().default("POV: You just moved to Bristol"),
   stages: z.array(z.string()).default([
     "Week 1: Eating alone every night",
@@ -34,13 +36,14 @@ export const POVReveal: React.FC<Props> = ({
   photos,
 }) => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
 
   const hookDur = sec(2.5);
   const stageDur = sec(2);
   const ctaDur = sec(4);
   const totalStagesDur = stages.length * stageDur;
 
-  const scenes = buildScenes([hookDur, totalStagesDur, ctaDur]);
+  const scenes = buildAdaptiveScenes([hookDur, totalStagesDur, ctaDur], durationInFrames);
   const [hookScene, stagesScene, ctaScene] = scenes;
 
   // Default photos if none provided

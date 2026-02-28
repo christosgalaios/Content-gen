@@ -16,10 +16,11 @@ import { FlashTransition } from "../components/FlashTransition";
 import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { FONTS } from "../lib/fonts";
 import { kenBurns, pulseScale } from "../lib/effects";
-import { sec, buildScenes } from "../lib/timing";
+import { sec, buildAdaptiveScenes } from "../lib/timing";
 import { snappyOut } from "../lib/easing";
 
 export const TestimonialSchema = z.object({
+  durationInSeconds: z.number().optional(),
   quote: z.string(),
   name: z.string(),
   memberSince: z.string().optional(),
@@ -40,7 +41,7 @@ export const Testimonial: React.FC<Props> = ({
   const bgSrc = backgroundImage || staticFile("assets/group-walk-1.jpg");
 
   // Scenes: intro (1.5s) → quote (5s) → attribution + CTA (3.5s)
-  const scenes = buildScenes([sec(1.5), sec(5), sec(3.5)]);
+  const scenes = buildAdaptiveScenes([sec(1.5), sec(5), sec(3.5)], durationInFrames);
   const [introScene, quoteScene, ctaScene] = scenes;
 
   const bgTransform = kenBurns(frame, {

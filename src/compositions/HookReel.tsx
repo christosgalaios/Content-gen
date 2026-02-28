@@ -18,6 +18,7 @@ import { snappyOut, punchyOvershoot } from "../lib/easing";
 import { pulseScale, staggerDelay } from "../lib/effects";
 
 export const HookReelSchema = z.object({
+  durationInSeconds: z.number().optional(),
   hookText: z.string(),
   bodyLines: z.array(z.string()),
   ctaText: z.string().default("Come alone. Leave with friends."),

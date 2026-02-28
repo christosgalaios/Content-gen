@@ -13,6 +13,7 @@ import { COLORS, FONT_SIZES, SAFE_ZONE } from "../lib/constants";
 import { sec, buildScenes } from "../lib/timing";
 
 export const StoryTimeSchema = z.object({
+  durationInSeconds: z.number().optional(),
   storyText: z
     .string()
     .default(

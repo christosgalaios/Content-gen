@@ -2,6 +2,8 @@ node_modules/
 out/
 dist/
 data/
+!data/pipeline.db
+!data/.gitkeep
 .env
 *.mp4
 *.webm
