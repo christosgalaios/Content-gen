@@ -72,6 +72,21 @@ const COMPOSITIONS: CompositionOption[] = [
     platforms: ["tiktok", "instagram-reels"],
     bestFor: ["reveal", "surprise", "transition", "hook"],
   },
+  {
+    id: "QuizPoll",
+    platforms: ["tiktok", "instagram-reels"],
+    bestFor: ["quiz", "poll", "engagement", "comment-bait", "interactive"],
+  },
+  {
+    id: "MemberMilestone",
+    platforms: ["tiktok", "instagram-reels", "instagram-stories"],
+    bestFor: ["milestone", "celebration", "growth", "community", "achievement"],
+  },
+  {
+    id: "WeeklyRecap",
+    platforms: ["tiktok", "instagram-reels", "instagram-stories"],
+    bestFor: ["recap", "weekly", "summary", "highlights", "review"],
+  },
 ];
 
 /**

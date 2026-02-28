@@ -20,6 +20,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@remotion/bundler": "^4.0.429",
     "@remotion/cli": "^4.0.429",
     "@remotion/fonts": "^4.0.429",
     "@remotion/google-fonts": "^4.0.429",
@@ -33,6 +34,7 @@
     "postcss": "^8.5.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "@remotion/renderer": "^4.0.429",
     "remotion": "^4.0.429",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.19.3",

@@ -58,6 +58,18 @@ const COMPOSITION_SCHEMAS: Record<string, { required: string[]; optional: string
     required: ["hookText", "revealText"],
     optional: ["backgroundImage"],
   },
+  "QuizPoll": {
+    required: ["question", "options"],
+    optional: ["revealIndex", "revealLabel", "ctaText"],
+  },
+  "MemberMilestone": {
+    required: ["milestone"],
+    optional: ["suffix", "preText", "celebrationText", "thankYouText"],
+  },
+  "WeeklyRecap": {
+    required: ["weekLabel", "events"],
+    optional: ["totalAttendees", "ctaText"],
+  },
 };
 
 /**
@@ -109,6 +121,30 @@ export function validateProps(
   if (baseName === "CountdownEvent" && props.daysLeft !== undefined) {
     if (typeof props.daysLeft !== "number") {
       errors.push("daysLeft must be a number");
+    }
+  }
+
+  if (baseName === "QuizPoll" && props.options) {
+    if (!Array.isArray(props.options)) {
+      errors.push("options must be an array");
+    }
+  }
+
+  if (baseName === "ListCountdown" && props.items) {
+    if (!Array.isArray(props.items)) {
+      errors.push("items must be an array");
+    }
+  }
+
+  if (baseName === "WeeklyRecap" && props.events) {
+    if (!Array.isArray(props.events)) {
+      errors.push("events must be an array");
+    }
+  }
+
+  if (baseName === "MemberMilestone" && props.milestone !== undefined) {
+    if (typeof props.milestone !== "number") {
+      errors.push("milestone must be a number");
     }
   }
 

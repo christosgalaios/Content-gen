@@ -2,7 +2,7 @@ import { log } from "../utils/logger";
 
 /**
  * Generate TikTok-style captions for a video using Whisper.cpp.
- * Requires @remotion/install-whisper-cpp and @remotion/captions.
+ * Requires @remotion/install-whisper-cpp (install separately when needed).
  *
  * This is a Phase 7 feature — currently a stub.
  */
@@ -12,10 +12,16 @@ export async function generateCaptions(
 ): Promise<{ words: { text: string; start: number; end: number }[] } | null> {
   try {
     // Dynamic import for optional dependency
-    const { installWhisperCpp } = await import("@remotion/install-whisper-cpp");
-    const { downloadWhisperModel, transcribe } = await import(
-      "@remotion/install-whisper-cpp"
-    );
+    let installWhisperCpp: any, downloadWhisperModel: any, transcribe: any;
+    try {
+      const mod = await import("@remotion/install-whisper-cpp" as string);
+      installWhisperCpp = mod.installWhisperCpp;
+      downloadWhisperModel = mod.downloadWhisperModel;
+      transcribe = mod.transcribe;
+    } catch {
+      log.warn("Caption generation requires @remotion/install-whisper-cpp. Skipping.");
+      return null;
+    }
 
     log.info("Setting up Whisper.cpp...");
 
@@ -23,7 +29,7 @@ export async function generateCaptions(
     const whisperPath = await installWhisperCpp({ version: "1.5.5" });
 
     // Download model if needed
-    await downloadWhisperModel({ model: whisperModel as any, folder: whisperPath });
+    await downloadWhisperModel({ model: whisperModel, folder: whisperPath });
 
     // Extract audio from video (requires ffmpeg)
     const { execSync } = require("child_process");
@@ -37,7 +43,7 @@ export async function generateCaptions(
     const result = await transcribe({
       inputPath: audioPath,
       whisperPath,
-      model: whisperModel as any,
+      model: whisperModel,
       tokenLevelTimestamps: true,
     });
 

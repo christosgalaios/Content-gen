@@ -93,12 +93,15 @@ TikTok/Reels (1080x1920):
 - StoryTime-TikTok: storyText + backgroundImage. Animated caption format.
 - PhotoDump-TikTok: photos[] + title. Trending grid format.
 - TransitionReveal-TikTok: hookText + revealText + photo. Mask reveal style.
+- QuizPoll-TikTok: question + options[] + revealIndex. Engagement/comment-bait quiz format.
+- MemberMilestone-TikTok: milestone number + celebration text. Shareworthy milestone content.
+- WeeklyRecap-TikTok: weekLabel + events[] (name, attendees, photo). Weekly summary format.
 
 Instagram Posts (1080x1080):
-- EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta
+- EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta, PhotoDump-Insta
 
 Instagram Stories (1080x1920):
-- EventPromo-Story, Testimonial-Story, CountdownEvent-Story
+- EventPromo-Story, Testimonial-Story, CountdownEvent-Story, StatsShowcase-Story, MemberMilestone-Story, WeeklyRecap-Story
 
 ${recentRenders.length > 0 ? `RECENT RENDERS (avoid repetition):\n${recentRenders.join("\n")}` : "No recent renders."}
 
@@ -141,6 +144,9 @@ IMPORTANT for props:
 - StoryTime: { storyText, backgroundImage? }
 - PhotoDump: { title, photos: string[], ctaText }
 - TransitionReveal: { hookText, revealText, backgroundImage? }
+- QuizPoll: { question, options: string[], revealIndex: number, revealLabel?, ctaText? }
+- MemberMilestone: { milestone: number, suffix?, preText?, celebrationText?, thankYouText? }
+- WeeklyRecap: { weekLabel, events: [{name, photo?, attendees?}], totalAttendees?, ctaText? }
 
 Return ONLY a valid JSON object:
 {

@@ -23,9 +23,15 @@ export function ensureAssetsDir(): void {
  */
 export function resolveAsset(contentItemId: string): string | null {
   const db = getDb();
-  const row = db
-    .prepare("SELECT file_path, file_name FROM content_library WHERE id LIKE ?")
-    .get(`${contentItemId}%`) as any;
+  // Try exact match first, then prefix match (content plan uses 8-char ID prefixes)
+  let row = db
+    .prepare("SELECT file_path, file_name FROM content_library WHERE id = ?")
+    .get(contentItemId) as any;
+  if (!row) {
+    row = db
+      .prepare("SELECT file_path, file_name FROM content_library WHERE id LIKE ? LIMIT 1")
+      .get(`${contentItemId}%`) as any;
+  }
 
   if (!row) {
     log.warn(`Content item not found: ${contentItemId}`);
@@ -77,12 +83,18 @@ export function cleanupGeneratedAssets(): void {
  */
 export function markAssetsUsed(contentItemIds: string[]): void {
   const db = getDb();
-  const stmt = db.prepare(
-    "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE id LIKE ?"
+  const exactStmt = db.prepare(
+    "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE id = ?"
+  );
+  const prefixStmt = db.prepare(
+    "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE id LIKE ? LIMIT 1"
   );
 
   const now = new Date().toISOString();
   for (const id of contentItemIds) {
-    stmt.run(now, `${id}%`);
+    const changes = exactStmt.run(now, id).changes;
+    if (changes === 0) {
+      prefixStmt.run(now, `${id}%`);
+    }
   }
 }

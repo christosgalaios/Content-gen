@@ -8,6 +8,17 @@ interface VideoMeta {
   fps: number;
 }
 
+function parseFps(rate: string): number {
+  const parts = rate.split("/");
+  if (parts.length === 2) {
+    const num = parseInt(parts[0], 10);
+    const den = parseInt(parts[1], 10);
+    return den > 0 ? num / den : 30;
+  }
+  const parsed = parseFloat(rate);
+  return isNaN(parsed) ? 30 : parsed;
+}
+
 /**
  * Extract video metadata using ffprobe.
  * Falls back to defaults if ffprobe is not available.
@@ -29,7 +40,7 @@ export function getVideoMetadata(filePath: string): VideoMeta {
       duration: parseFloat(data.format?.duration || "0"),
       hasAudio: !!audioStream,
       fps: videoStream?.r_frame_rate
-        ? eval(videoStream.r_frame_rate) // e.g. "30/1"
+        ? parseFps(videoStream.r_frame_rate)
         : 30,
     };
   } catch {

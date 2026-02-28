@@ -16,6 +16,9 @@ import { POVReveal, POVRevealSchema } from "./compositions/POVReveal";
 import { ListCountdown, ListCountdownSchema } from "./compositions/ListCountdown";
 import { StoryTime, StoryTimeSchema } from "./compositions/StoryTime";
 import { TransitionReveal, TransitionRevealSchema } from "./compositions/TransitionReveal";
+import { QuizPoll, QuizPollSchema } from "./compositions/QuizPoll";
+import { MemberMilestone, MemberMilestoneSchema } from "./compositions/MemberMilestone";
+import { WeeklyRecap, WeeklyRecapSchema } from "./compositions/WeeklyRecap";
 
 // Re-export schemas for external use
 export {
@@ -32,6 +35,9 @@ export {
   ListCountdownSchema,
   StoryTimeSchema,
   TransitionRevealSchema,
+  QuizPollSchema,
+  MemberMilestoneSchema,
+  WeeklyRecapSchema,
 };
 
 // --- Root ---
@@ -180,6 +186,7 @@ export const RemotionRoot: React.FC = () => {
               "Week 4: 10 new friends, 3 group chats",
             ],
             ctaText: "Come alone. Leave with friends.",
+            photos: [],
           }}
         />
         <Composition
@@ -240,6 +247,62 @@ export const RemotionRoot: React.FC = () => {
             title: "This week's photo dump",
             photos: [],
             ctaText: "Join the adventure",
+          }}
+        />
+        <Composition
+          id="QuizPoll-TikTok"
+          component={QuizPoll}
+          durationInFrames={420}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={QuizPollSchema}
+          defaultProps={{
+            question: "Which event should we run next?",
+            options: [
+              "Sunset hike",
+              "Board game night",
+              "Speed friending",
+              "Beach day trip",
+            ],
+            revealIndex: 2,
+            revealLabel: "You chose...",
+            ctaText: "Comment below!",
+          }}
+        />
+        <Composition
+          id="MemberMilestone-TikTok"
+          component={MemberMilestone}
+          durationInFrames={420}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={MemberMilestoneSchema}
+          defaultProps={{
+            milestone: 3000,
+            suffix: "",
+            preText: "We just hit...",
+            celebrationText: "members strong!",
+            thankYouText: "Thank you for being part of this",
+          }}
+        />
+        <Composition
+          id="WeeklyRecap-TikTok"
+          component={WeeklyRecap}
+          durationInFrames={450}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={WeeklyRecapSchema}
+          defaultProps={{
+            weekLabel: "This week at The Super Socializers",
+            events: [
+              { name: "Clifton Suspension Bridge Walk", attendees: 18 },
+              { name: "Speed Friending @ The Grain Barge", attendees: 24 },
+              { name: "Board Games Night", attendees: 12 },
+            ],
+            totalAttendees: 54,
+            ctaText: "Next week could be your first",
           }}
         />
       </Folder>
@@ -357,6 +420,58 @@ export const RemotionRoot: React.FC = () => {
             daysLeft: 2,
             eventType: "Quiz Night",
             highlights: [],
+          }}
+        />
+        <Composition
+          id="StatsShowcase-Story"
+          component={StatsShowcase}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={StatsShowcaseSchema}
+          defaultProps={{
+            stats: [
+              { value: 2900, suffix: "+", label: "Members" },
+              { value: 90, suffix: "%", label: "Come solo" },
+              { value: 48, suffix: "/5", label: "Rating" },
+            ],
+            headline: "The Super Socializers",
+            ctaText: "Swipe up to join",
+          }}
+        />
+        <Composition
+          id="MemberMilestone-Story"
+          component={MemberMilestone}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={MemberMilestoneSchema}
+          defaultProps={{
+            milestone: 3000,
+            suffix: "",
+            preText: "We just hit...",
+            celebrationText: "members!",
+            thankYouText: "Thank you!",
+          }}
+        />
+        <Composition
+          id="WeeklyRecap-Story"
+          component={WeeklyRecap}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={WeeklyRecapSchema}
+          defaultProps={{
+            weekLabel: "This week's highlights",
+            events: [
+              { name: "Saturday Hike", attendees: 15 },
+              { name: "Pub Quiz Night", attendees: 20 },
+            ],
+            totalAttendees: 35,
+            ctaText: "Join us next week",
           }}
         />
       </Folder>

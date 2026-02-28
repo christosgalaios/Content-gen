@@ -26,29 +26,40 @@ export function scanFolder(folderPath: string): ScannedFile[] {
   const files: ScannedFile[] = [];
 
   function walk(dir: string) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (err: any) {
+      log.warn(`Cannot read directory ${dir}: ${err.message}`);
+      return;
+    }
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(fullPath);
-      } else if (entry.isFile()) {
-        const ext = path.extname(entry.name).toLowerCase();
-        let mediaType: "photo" | "video" | null = null;
+      try {
+        if (entry.isDirectory()) {
+          walk(fullPath);
+        } else if (entry.isFile()) {
+          const ext = path.extname(entry.name).toLowerCase();
+          let mediaType: "photo" | "video" | null = null;
 
-        if (SUPPORTED_IMAGE_EXTS.has(ext)) mediaType = "photo";
-        else if (SUPPORTED_VIDEO_EXTS.has(ext)) mediaType = "video";
+          if (SUPPORTED_IMAGE_EXTS.has(ext)) mediaType = "photo";
+          else if (SUPPORTED_VIDEO_EXTS.has(ext)) mediaType = "video";
 
-        if (mediaType) {
-          const stat = fs.statSync(fullPath);
-          files.push({
-            filePath: fullPath,
-            fileName: entry.name,
-            extension: ext,
-            mediaType,
-            fileSize: stat.size,
-            modifiedAt: stat.mtime.toISOString(),
-          });
+          if (mediaType) {
+            const stat = fs.statSync(fullPath);
+            files.push({
+              filePath: fullPath,
+              fileName: entry.name,
+              extension: ext,
+              mediaType,
+              fileSize: stat.size,
+              modifiedAt: stat.mtime.toISOString(),
+            });
+          }
         }
+      } catch (err: any) {
+        log.warn(`Error processing ${fullPath}: ${err.message}`);
       }
     }
   }

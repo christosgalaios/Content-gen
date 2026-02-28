@@ -52,13 +52,13 @@ export async function runBuild(config: PipelineConfig): Promise<StageResult> {
 
     // Auto-inject background images if the composition supports it
     if (resolvedAssetPaths.length > 0) {
-      if ("backgroundImage" in resolvedProps || !resolvedProps.backgroundImage) {
+      if (!resolvedProps.backgroundImage) {
         resolvedProps.backgroundImage = resolvedAssetPaths[0];
       }
-      if ("images" in resolvedProps || Array.isArray(resolvedProps.images)) {
+      if ("images" in resolvedProps && !Array.isArray(resolvedProps.images)) {
         resolvedProps.images = resolvedAssetPaths;
       }
-      if ("photos" in resolvedProps || Array.isArray(resolvedProps.photos)) {
+      if ("photos" in resolvedProps && !Array.isArray(resolvedProps.photos)) {
         resolvedProps.photos = resolvedAssetPaths;
       }
     }

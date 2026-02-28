@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
+import { log } from "../utils/logger";
 
-interface OutputMetadata {
+export interface OutputMetadata {
   compositionId: string;
   platform: string;
   caption: string;
@@ -18,8 +19,12 @@ export function writeOutputMetadata(
   videoPath: string,
   metadata: OutputMetadata,
 ): void {
-  const metaPath = videoPath.replace(/\.mp4$/, ".meta.json");
-  fs.writeFileSync(metaPath, JSON.stringify(metadata, null, 2));
+  const metaPath = videoPath.replace(/\.(mp4|webm|mkv)$/, ".meta.json");
+  try {
+    fs.writeFileSync(metaPath, JSON.stringify(metadata, null, 2));
+  } catch (err: any) {
+    log.warn(`Failed to write metadata for ${videoPath}: ${err.message}`);
+  }
 }
 
 /**
@@ -31,17 +36,21 @@ export function listOutputs(outputDir: string): string[] {
   const results: string[] = [];
 
   function walk(dir: string) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(fullPath);
-      } else if (entry.name.endsWith(".mp4")) {
-        results.push(fullPath);
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(fullPath);
+        } else if (entry.name.endsWith(".mp4")) {
+          results.push(fullPath);
+        }
       }
+    } catch (err: any) {
+      log.warn(`Failed to read directory ${dir}: ${err.message}`);
     }
   }
 
   walk(outputDir);
-  return results;
+  return results.sort();
 }

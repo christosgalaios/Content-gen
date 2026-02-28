@@ -69,9 +69,9 @@ tailwind.config.js    # Tailwind theme (brand colors, fonts)
 
 Compositions are organized in folders in `src/Root.tsx`:
 
-- **TikTok-Reels/** — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`, `CountdownEvent-TikTok`, `StatsShowcase-TikTok`, `BeforeAfter-TikTok`, `POVReveal-TikTok`, `ListCountdown-TikTok`, `StoryTime-TikTok`, `TransitionReveal-TikTok`, `PhotoDump-TikTok`
+- **TikTok-Reels/** — `EventPromo-TikTok`, `Testimonial-TikTok`, `HookReel-TikTok`, `TextAnimation-TikTok`, `CountdownEvent-TikTok`, `StatsShowcase-TikTok`, `BeforeAfter-TikTok`, `POVReveal-TikTok`, `ListCountdown-TikTok`, `StoryTime-TikTok`, `TransitionReveal-TikTok`, `PhotoDump-TikTok`, `QuizPoll-TikTok`, `MemberMilestone-TikTok`, `WeeklyRecap-TikTok`
 - **Instagram-Posts/** — `EventPromo-Insta`, `PhotoMontage-Insta`, `StatsShowcase-Insta`, `PhotoDump-Insta`
-- **Instagram-Stories/** — `EventPromo-Story`, `Testimonial-Story`, `CountdownEvent-Story`
+- **Instagram-Stories/** — `EventPromo-Story`, `Testimonial-Story`, `CountdownEvent-Story`, `StatsShowcase-Story`, `MemberMilestone-Story`, `WeeklyRecap-Story`
 
 Each composition has a Zod schema for its props, making them fully parameterizable.
 
