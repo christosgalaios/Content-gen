@@ -87,7 +87,7 @@ export function markAssetsUsed(contentItemIds: string[]): void {
     "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE id = ?"
   );
   const prefixStmt = db.prepare(
-    "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE id LIKE ? LIMIT 1"
+    "UPDATE content_library SET usage_count = usage_count + 1, last_used = ? WHERE rowid = (SELECT rowid FROM content_library WHERE id LIKE ? LIMIT 1)"
   );
 
   const now = new Date().toISOString();

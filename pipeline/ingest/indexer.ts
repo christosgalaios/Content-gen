@@ -28,11 +28,11 @@ export async function runIngest(config: PipelineConfig): Promise<StageResult> {
   }
 
   // 2. Check which files are new or changed
-  const existingStmt = db.prepare(
+  const existingRows = db.prepare(
     "SELECT file_path, file_modified_at FROM content_library"
-  );
+  ).all() as any[];
   const existing = new Map<string, string>();
-  for (const row of existingStmt.iterate() as Iterable<any>) {
+  for (const row of existingRows) {
     existing.set(row.file_path, row.file_modified_at);
   }
 

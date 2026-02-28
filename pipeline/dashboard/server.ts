@@ -128,12 +128,12 @@ function handleApi(pathname: string, body: any): any {
 
     case "/api/db/stats": {
       try {
-        const Database = require("better-sqlite3");
+        const { DatabaseSync } = require("node:sqlite");
         const dbPath = path.resolve(__dirname, "../../data/pipeline.db");
         if (!fs.existsSync(dbPath)) {
           return { available: false, message: "No database yet. Run pipeline:ingest first." };
         }
-        const db = new Database(dbPath, { readonly: true });
+        const db = new DatabaseSync(dbPath, { readOnly: true });
         const content = db.prepare("SELECT COUNT(*) as count FROM content_library").get() as any;
         const trends = db.prepare("SELECT COUNT(*) as count FROM trend_cache").get() as any;
         const plans = db.prepare("SELECT COUNT(*) as count FROM content_plans").get() as any;
