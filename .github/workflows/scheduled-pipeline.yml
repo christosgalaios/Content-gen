@@ -1,0 +1,67 @@
+name: Scheduled Pipeline
+
+on:
+  schedule:
+    # Run daily at 8am UTC (morning content generation)
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Pipeline stage to run"
+        required: false
+        default: "events-all"
+        type: choice
+        options:
+          - events-all
+          - events
+          - event-plan
+          - trends
+          - all
+      dry_run:
+        description: "Dry run (plan only, no rendering)"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  pipeline:
+    name: Run Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          STAGE="${{ github.event.inputs.stage || 'events-all' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'true' }}"
+
+          ARGS="--stage $STAGE"
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          npx tsx pipeline/index.ts $ARGS
+
+      - name: Upload pipeline output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-output-${{ github.run_id }}
+          path: |
+            out/
+            data/pipeline.db
+          retention-days: 14
+          if-no-files-found: ignore
