@@ -58,6 +58,10 @@ const COMPOSITION_SCHEMAS: Record<string, { required: string[]; optional: string
     required: ["hookText", "revealText"],
     optional: ["backgroundImage"],
   },
+  "QuizPoll": {
+    required: ["question", "options"],
+    optional: ["revealIndex", "revealLabel", "ctaText"],
+  },
 };
 
 /**

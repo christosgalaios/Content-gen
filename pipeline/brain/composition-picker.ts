@@ -72,6 +72,11 @@ const COMPOSITIONS: CompositionOption[] = [
     platforms: ["tiktok", "instagram-reels"],
     bestFor: ["reveal", "surprise", "transition", "hook"],
   },
+  {
+    id: "QuizPoll",
+    platforms: ["tiktok", "instagram-reels"],
+    bestFor: ["quiz", "poll", "engagement", "comment-bait", "interactive"],
+  },
 ];
 
 /**

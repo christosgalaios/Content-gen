@@ -1,9 +1,11 @@
 node_modules/
 out/
 dist/
+data/
 .env
 *.mp4
 *.webm
+pipeline.config.json
 
 # OS
 Thumbs.db

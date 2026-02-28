@@ -16,6 +16,7 @@ import { POVReveal, POVRevealSchema } from "./compositions/POVReveal";
 import { ListCountdown, ListCountdownSchema } from "./compositions/ListCountdown";
 import { StoryTime, StoryTimeSchema } from "./compositions/StoryTime";
 import { TransitionReveal, TransitionRevealSchema } from "./compositions/TransitionReveal";
+import { QuizPoll, QuizPollSchema } from "./compositions/QuizPoll";
 
 // Re-export schemas for external use
 export {
@@ -32,6 +33,7 @@ export {
   ListCountdownSchema,
   StoryTimeSchema,
   TransitionRevealSchema,
+  QuizPollSchema,
 };
 
 // --- Root ---
@@ -241,6 +243,27 @@ export const RemotionRoot: React.FC = () => {
             title: "This week's photo dump",
             photos: [],
             ctaText: "Join the adventure",
+          }}
+        />
+        <Composition
+          id="QuizPoll-TikTok"
+          component={QuizPoll}
+          durationInFrames={420}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={QuizPollSchema}
+          defaultProps={{
+            question: "Which event should we run next?",
+            options: [
+              "Sunset hike",
+              "Board game night",
+              "Speed friending",
+              "Beach day trip",
+            ],
+            revealIndex: 2,
+            revealLabel: "You chose...",
+            ctaText: "Comment below!",
           }}
         />
       </Folder>

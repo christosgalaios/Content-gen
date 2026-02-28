@@ -93,9 +93,10 @@ TikTok/Reels (1080x1920):
 - StoryTime-TikTok: storyText + backgroundImage. Animated caption format.
 - PhotoDump-TikTok: photos[] + title. Trending grid format.
 - TransitionReveal-TikTok: hookText + revealText + photo. Mask reveal style.
+- QuizPoll-TikTok: question + options[] + revealIndex. Engagement/comment-bait quiz format.
 
 Instagram Posts (1080x1080):
-- EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta
+- EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta, PhotoDump-Insta
 
 Instagram Stories (1080x1920):
 - EventPromo-Story, Testimonial-Story, CountdownEvent-Story
@@ -141,6 +142,7 @@ IMPORTANT for props:
 - StoryTime: { storyText, backgroundImage? }
 - PhotoDump: { title, photos: string[], ctaText }
 - TransitionReveal: { hookText, revealText, backgroundImage? }
+- QuizPoll: { question, options: string[], revealIndex: number, revealLabel?, ctaText? }
 
 Return ONLY a valid JSON object:
 {
