@@ -1,5 +1,6 @@
 import type { ContentItem } from "../../types/content";
 import type { Trend } from "../../types/trends";
+import type { MeetupEvent } from "../../types/event";
 
 /**
  * Generate a content library summary for Claude.
@@ -200,5 +201,145 @@ Return ONLY a valid JSON object:
 {
   "items": [ ... ],
   "strategy": "2-3 sentence description of the strategic approach and why these compositions were chosen"
+}`;
+}
+
+/**
+ * Build a prompt for event-specific content planning.
+ * Generates a batch of videos to promote a single upcoming event.
+ */
+export function buildEventPrompt(
+  event: MeetupEvent,
+  daysUntil: number,
+  relevantTrends: Trend[],
+  recommendedCompositions: string[],
+  contentSummary: string,
+  videosCount: number,
+  platforms: string[],
+  recentRenders: string[],
+): string {
+  const trendsSummary = relevantTrends.length > 0
+    ? `RELEVANT TRENDS FOR THIS EVENT (${relevantTrends.length} matching trends):
+${relevantTrends
+  .slice(0, 8)
+  .map(
+    (t) => `  - ${t.name}: ${t.description} (relevance:${t.relevanceScore}, popularity:${t.popularityScore})`
+  )
+  .join("\n")}
+
+Weave these trends into hooks and captions where they fit naturally. Don't force-fit trends that don't match.`
+    : "No specific trends matched this event type. Use evergreen engagement strategies.";
+
+  const eventDate = new Date(event.dateTime);
+  const dayOfWeek = eventDate.toLocaleDateString("en-GB", { weekday: "long" });
+  const dateFormatted = eventDate.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const timeFormatted = eventDate.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const spotsInfo = event.capacity
+    ? `Capacity: ${event.capacity} spots | Currently going: ${event.attendees} (${Math.round((event.attendees / event.capacity) * 100)}% full)`
+    : `Currently going: ${event.attendees} people`;
+
+  const urgencyLevel =
+    daysUntil <= 1
+      ? "MAXIMUM URGENCY — event is tomorrow or today"
+      : daysUntil <= 3
+        ? "HIGH URGENCY — event is in 2-3 days"
+        : daysUntil <= 7
+          ? "MEDIUM URGENCY — event is this week"
+          : "LOW URGENCY — event is 1-3 weeks away";
+
+  return `You are the content strategist for The Super Socializers — Bristol, Bath, Cardiff & Somerset's friendliest social community. 2,900+ Meetup members, 4.8/5 rating.
+
+BRAND VOICE: Fun, energetic, warm, inclusive, slightly cheeky. Think: your most outgoing friend inviting you to something brilliant.
+- First person plural ("we", "us") — never "the group"
+- Address reader as "you"
+- Short sentences, punchy openers
+- Emojis: max 3-4 per post. Never in first line on TikTok.
+
+KEY MESSAGES (weave at least one into EVERY piece of content):
+1. 90% come alone — that's totally normal
+2. Strictly platonic, zero pressure, zero drama
+3. Something for everyone: hikes, drinks, games, festivals, speed friending
+4. Bristol's friendliest social community (nearly 3,000 members)
+
+═══════════════════════════════════════
+EVENT TO PROMOTE
+═══════════════════════════════════════
+Title: ${event.title}
+Date: ${dateFormatted}
+Time: ${timeFormatted}
+Day: ${dayOfWeek}
+Location: ${event.location}
+City: ${event.city}
+Type: ${event.eventType}
+${spotsInfo}
+Days until event: ${daysUntil}
+Urgency: ${urgencyLevel}
+Meetup URL: ${event.meetupUrl}
+${event.description ? `\nDescription: ${event.description.slice(0, 500)}` : ""}
+═══════════════════════════════════════
+
+${trendsSummary}
+
+${contentSummary}
+
+RECOMMENDED COMPOSITIONS for this ${event.eventType} event (pick from these):
+${recommendedCompositions.map((c) => `  - ${c}`).join("\n")}
+
+AVAILABLE COMPOSITION IDS (use these IDs exactly — append -TikTok, -Insta, or -Story):
+TikTok/Reels: EventPromo-TikTok, Testimonial-TikTok, HookReel-TikTok, TextAnimation-TikTok, CountdownEvent-TikTok, StatsShowcase-TikTok, POVReveal-TikTok, BeforeAfter-TikTok, ListCountdown-TikTok, StoryTime-TikTok, PhotoDump-TikTok, TransitionReveal-TikTok, QuizPoll-TikTok, MemberMilestone-TikTok, WeeklyRecap-TikTok
+Instagram Posts: EventPromo-Insta, PhotoMontage-Insta, StatsShowcase-Insta, PhotoDump-Insta
+Instagram Stories: EventPromo-Story, Testimonial-Story, CountdownEvent-Story, StatsShowcase-Story, MemberMilestone-Story, WeeklyRecap-Story, HookReel-Story, BeforeAfter-Story, ListCountdown-Story, QuizPoll-Story, StoryTime-Story, TransitionReveal-Story
+
+${recentRenders.length > 0 ? `RECENT RENDERS (avoid repetition):\n${recentRenders.join("\n")}` : "No recent renders — full creative freedom."}
+
+EVENT PROMOTION STRATEGY:
+1. EVERY video in this batch must promote "${event.title}" specifically. Include the event name, date, or details in every video.
+2. Use the event details (name, date, time, location) in props — especially for EventPromo and CountdownEvent compositions.
+3. For CountdownEvent, set daysLeft to ${daysUntil}.
+4. For EventPromo, use: eventName="${event.title}", eventDate="${dateFormatted}", eventTime="${timeFormatted}", eventLocation="${event.location}", eventType="${event.eventType}".
+5. HOOKS must reference the specific event — "This ${dayOfWeek}'s ${event.eventType} event" not just "our next event".
+6. POSTING SCHEDULE: Spread posts across the days leading up to the event. Today is ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}. The event is ${daysUntil} day(s) away.
+   - If ${daysUntil} > 7: post on day 7, 5, 3, and 1 before the event.
+   - If ${daysUntil} <= 7: spread evenly across remaining days.
+   - If ${daysUntil} <= 1: post ASAP (all videos today).
+   Best posting times: Tue-Thu 2-5PM UK, weekends 10AM-12PM UK.
+7. CTA: Include Meetup-specific CTAs like "Sign up on Meetup", "Link in bio to RSVP", "Join ${event.attendees}+ people already going".
+8. VARIETY: Use ${videosCount} different compositions. Mix engagement-drivers with event-promo formats.
+9. HASHTAG STRATEGY: Include location-specific tags for ${event.city || "Bristol"}:
+   - Always: #TheSuperSocializers #bristolsocial #meetnewpeoplebristol
+   - Location: ${event.city === "Cardiff" ? "#cardiff #cardiffevents #cardifflife" : event.city === "Bath" ? "#bath #bathlife #bathevents" : "#bristolevents #thingstodoinbristol"}
+   - Niche: #makingfriendsasanadult #adultfriendship #newtobristol
+
+Generate EXACTLY ${videosCount} videos for platforms: ${platforms.join(", ")}.
+
+PROP SCHEMAS (must match exactly):
+- EventPromo: { eventName, eventDate, eventTime, eventLocation, eventType, memberCount: "2,900+" }
+- Testimonial: { quote, name, memberSince? }
+- HookReel: { hookText, bodyLines: string[], ctaText }
+- TextAnimation: { lines: string[], backgroundColor: "#1A1A2E", textColor: "#FFFFFF", accentColor: "#FF6B35" }
+- CountdownEvent: { eventName, daysLeft: number, spotsLeft?: number, eventType, highlights: string[] }
+- StatsShowcase: { stats: [{value: number, suffix: string, label: string}], headline, ctaText }
+- POVReveal: { hookText, stages: string[], ctaText, photos: string[] }
+- BeforeAfter: { beforeText, afterText, revealText, backgroundImage? }
+- ListCountdown: { title, items: string[], ctaText }
+- StoryTime: { storyText, backgroundImage? }
+- PhotoDump: { title, photos: string[], ctaText }
+- TransitionReveal: { hookText, revealText, backgroundImage? }
+- QuizPoll: { question, options: string[], revealIndex: number, revealLabel?, ctaText? }
+- MemberMilestone: { milestone: number, suffix?, preText?, celebrationText?, thankYouText? }
+- WeeklyRecap: { weekLabel, events: [{name, photo?, attendees?}], totalAttendees?, ctaText? }
+
+Return ONLY a valid JSON object:
+{
+  "items": [ ... ],
+  "strategy": "2-3 sentence description of the strategic approach for promoting this specific event"
 }`;
 }

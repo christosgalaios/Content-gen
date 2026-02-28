@@ -18,7 +18,7 @@ npm run dev        # Open Remotion Studio (preview + edit)
 npm run render     # Render a composition to MP4
 npx remotion render <CompositionId> out/<filename>.mp4
 
-# Autopilot pipeline
+# Autopilot pipeline (generic batch)
 npm run pipeline            # Run full pipeline (ingest → trends → plan → build → render)
 npm run pipeline:ingest     # Stage 1: Index content assets
 npm run pipeline:trends     # Stage 2: Scrape trending topics
@@ -26,6 +26,15 @@ npm run pipeline:plan       # Stage 3: AI-plan video content
 npm run pipeline:build      # Stage 4: Build Remotion props
 npm run pipeline:render     # Stage 5: Batch render videos
 npm run pipeline:dry-run    # Plan without rendering
+
+# Event-driven pipeline (per-event promotional batches)
+npm run pipeline:events           # Full event pipeline (scrape → trends → plan → build → render)
+npm run pipeline:events:scrape    # Scrape upcoming Meetup events only
+npm run pipeline:events:plan      # Generate per-event content plans only
+npm run pipeline:events:dry-run   # Plan without rendering
+
+# TikTok Studio
+npm run pipeline:tiktok-login    # Log in to TikTok Studio (saves cookies for analytics)
 ```
 
 ## Project Structure
@@ -43,20 +52,28 @@ pipeline/
   config.ts          # Pipeline configuration loader
   brain/             # AI planning (composition picker, planner, prompts)
     composition-picker.ts  # Scored ranking, variety enforcement, batch diversity
-    planner.ts             # Claude-powered content plan generation
-    prompts.ts             # Prompt construction + content/trend summarization
+    planner.ts             # Claude-powered content plan generation (generic batches)
+    event-planner.ts       # Event-driven planning (per-event promotional batches)
+    prompts.ts             # Prompt construction + content/trend/event summarization
   builder/           # Props generation + validation
     schema-validator.ts    # Runtime prop validation against composition schemas
   ingest/            # Asset scanning, metadata extraction, tagging
   renderer/          # Batch rendering + caption generation
-  trends/            # TikTok Creative Center + Claude trend scraping
-  db/                # SQLite database (better-sqlite3)
+  trends/            # TikTok Studio/Creative Center + Claude trend scraping + Meetup events
+    meetup-scraper.ts      # Scrape upcoming events from Meetup
+    event-matcher.ts       # Map event types → relevant trends + compositions
+    tiktok-creative.ts     # TikTok Studio analytics + Creative Center trends
+    claude-trends.ts       # Claude web search for niche trends
+    trend-store.ts         # Store/cache trends in SQLite
+    matcher.ts             # Match trends to content assets
+  db/                # SQLite database (node:sqlite)
   utils/             # Logger, Claude CLI client, ffprobe
 types/
   pipeline.ts        # Pipeline config + stage types
   content.ts         # Media item types (ContentItem, MediaMetadata)
   plan.ts            # Content plan types (ContentPlan, ContentPlanItem, Platform)
   trends.ts          # Trend data types (Trend, TrendMatch)
+  event.ts           # Meetup event types (MeetupEvent, EventType)
 public/
   assets/            # Event photos for compositions
 remotion.config.ts    # Webpack + TailwindCSS config
@@ -137,6 +154,29 @@ The Claude system prompt emphasizes:
 - Scroll-stopping hooks (specific, not generic)
 - Emotional arcs: hook → tension/value → CTA
 - Prioritizing comments and shares over passive views
+
+### Event-Driven Pipeline (`pipeline/brain/event-planner.ts`)
+
+The event pipeline scrapes real upcoming Meetup events and generates targeted promotional batches:
+
+1. **Meetup Scraping** — Playwright extracts events from https://www.meetup.com/the-super-socializers-uk/events/ (title, date, time, location, attendees, capacity)
+2. **Event Categorization** — Auto-classifies events as: hiking, pub-social, games, speed-friending, comedy, festival, coffee-social, walk, activity, mixed, other
+3. **Trend Matching** — Filters global trends to those relevant to each event type (hiking trends for hiking events, pub trends for pub socials, etc.)
+4. **Per-Event Planning** — Calls Claude with event-specific context (date, location, days until event, urgency level, relevant trends) to generate 2-5 promotional videos per event
+5. **Posting Schedule** — Claude decides optimal posting times relative to the event date (e.g., 7d, 5d, 3d, 1d before)
+6. **Composition Selection** — Each event type has recommended compositions:
+   - Hiking: CountdownEvent, POVReveal, BeforeAfter, ListCountdown
+   - Pub Social: CountdownEvent, QuizPoll, Testimonial, HookReel
+   - Speed Friending: CountdownEvent, QuizPoll, HookReel, BeforeAfter
+   - Games: CountdownEvent, QuizPoll, HookReel, ListCountdown
+
+### TikTok Studio Integration
+
+The TikTok trends scraper supports two modes:
+- **TikTok Studio** (authenticated) — scrapes account analytics, video performance, and trending content suggestions. Requires `npm run pipeline:tiktok-login` to save session cookies.
+- **Creative Center** (public fallback) — scrapes trending hashtags from ads.tiktok.com. No auth required.
+
+Account insights from TikTok Studio inform content strategy by identifying what formats and hooks perform best for our specific audience.
 
 ---
 

@@ -14,6 +14,11 @@
     "pipeline:build": "npx tsx pipeline/index.ts --stage build",
     "pipeline:render": "npx tsx pipeline/index.ts --stage render",
     "pipeline:dry-run": "npx tsx pipeline/index.ts --dry-run",
+    "pipeline:events": "npx tsx pipeline/index.ts --stage events-all",
+    "pipeline:events:scrape": "npx tsx pipeline/index.ts --stage events",
+    "pipeline:events:plan": "npx tsx pipeline/index.ts --stage event-plan",
+    "pipeline:events:dry-run": "npx tsx pipeline/index.ts --stage events-all --dry-run",
+    "pipeline:tiktok-login": "npx tsx -e \"require('./pipeline/trends/tiktok-creative').saveTikTokSession()\"",
     "dashboard": "npx tsx pipeline/dashboard/server.ts"
   },
   "keywords": [],

@@ -35,10 +35,13 @@ export interface PipelineConfig {
 export type PipelineStage =
   | "ingest"
   | "trends"
+  | "events"
   | "plan"
+  | "event-plan"
   | "build"
   | "render"
-  | "all";
+  | "all"
+  | "events-all";
 
 export interface StageResult {
   stage: PipelineStage;
