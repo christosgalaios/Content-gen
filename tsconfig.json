@@ -14,5 +14,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "remotion.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "remotion.config.ts", "pipeline/**/*.ts", "types/**/*.ts"]
 }
