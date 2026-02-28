@@ -474,6 +474,103 @@ export const RemotionRoot: React.FC = () => {
             ctaText: "Join us next week",
           }}
         />
+        <Composition
+          id="HookReel-Story"
+          component={HookReel}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={HookReelSchema}
+          defaultProps={{
+            hookText: "POV: You just moved to Bristol",
+            bodyLines: [
+              "Scrolling for plans every weekend",
+              "Found a group on Meetup",
+              "Showed up alone",
+              "Left with 10 new friends",
+            ],
+            ctaText: "Swipe up to join",
+          }}
+        />
+        <Composition
+          id="BeforeAfter-Story"
+          component={BeforeAfter}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={BeforeAfterSchema}
+          defaultProps={{
+            beforeText: "Before: Netflix every Friday",
+            afterText: "After: Plans every weekend",
+            revealText: "The Super Socializers",
+          }}
+        />
+        <Composition
+          id="ListCountdown-Story"
+          component={ListCountdown}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={ListCountdownSchema}
+          defaultProps={{
+            title: "3 reasons to join this week",
+            items: [
+              "Speed friending on Friday",
+              "Hike on Saturday",
+              "Pub quiz on Sunday",
+            ],
+            ctaText: "Swipe up for details",
+          }}
+        />
+        <Composition
+          id="QuizPoll-Story"
+          component={QuizPoll}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={QuizPollSchema}
+          defaultProps={{
+            question: "What should our next event be?",
+            options: [
+              "Sunset hike",
+              "Board game night",
+              "Beach day trip",
+            ],
+            revealIndex: 0,
+            revealLabel: "Most voted!",
+            ctaText: "DM us your pick",
+          }}
+        />
+        <Composition
+          id="StoryTime-Story"
+          component={StoryTime}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={StoryTimeSchema}
+          defaultProps={{
+            storyText:
+              "Moved to Bristol two months ago. Knew nobody. Found this group. Now I have weekend plans every single week.",
+          }}
+        />
+        <Composition
+          id="TransitionReveal-Story"
+          component={TransitionReveal}
+          durationInFrames={300}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={TransitionRevealSchema}
+          defaultProps={{
+            hookText: "What if we told you...",
+            revealText: "2,900+ people found their crew here",
+          }}
+        />
       </Folder>
     </>
   );

@@ -9,6 +9,7 @@ import {
   summarizeContentLibrary,
   summarizeTrends,
 } from "./prompts";
+import { pickDiverseBatch, compositionNeedsPhotos } from "./composition-picker";
 import type { PipelineConfig, StageResult } from "../../types/pipeline";
 import type { ContentPlan, ContentPlanItem } from "../../types/plan";
 
@@ -19,6 +20,7 @@ export async function runPlan(
   config: PipelineConfig,
   dryRun: boolean = false,
 ): Promise<StageResult> {
+  const startTime = Date.now();
   const db = getDb();
 
   // Gather inputs
@@ -28,7 +30,7 @@ export async function runPlan(
       stage: "plan",
       success: false,
       message: "No content in library. Run ingest first.",
-      durationMs: 0,
+      durationMs: Date.now() - startTime,
     };
   }
 
@@ -38,13 +40,25 @@ export async function runPlan(
   // Get recent renders to avoid repetition
   const recentRenders = db
     .prepare(
-      "SELECT composition_id, props_json FROM render_jobs WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 10"
+      "SELECT composition_id, props_json FROM render_jobs WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 20"
     )
     .all() as any[];
 
-  const recentSummary = recentRenders.map(
-    (r: any) => `  - ${r.composition_id}: ${JSON.parse(r.props_json).hookText || JSON.parse(r.props_json).eventName || "..."}`
+  const recentCompositionIds = recentRenders.map((r: any) => r.composition_id);
+
+  const recentSummary = recentRenders.slice(0, 10).map((r: any) => {
+    const props = JSON.parse(r.props_json);
+    const label = props.hookText || props.eventName || props.title || props.question || "...";
+    return `  - ${r.composition_id}: "${label}"`;
+  });
+
+  // Pre-pick a diverse batch to guide Claude's selection
+  const suggestedBatch = pickDiverseBatch(
+    config.videosPerRun,
+    config.platforms[0] as any,
+    recentCompositionIds,
   );
+  log.info(`Suggested batch: ${suggestedBatch.join(", ")}`);
 
   // Build the prompt
   const contentSummary = summarizeContentLibrary(content);
@@ -64,7 +78,11 @@ export async function runPlan(
     prompt,
     jsonMode: true,
     systemPrompt:
-      "You are a viral content strategist. Generate content plans as valid JSON. Be creative with hooks and copy.",
+      "You are a viral social media content strategist specialising in short-form video. " +
+      "Generate content plans as valid JSON. " +
+      "Write hooks that are specific and scroll-stopping — never generic. " +
+      "Every video must have a clear emotional arc: hook → tension/value → CTA. " +
+      "Prioritise content that drives comments and shares over passive views.",
   });
 
   if (!response.parsed) {
@@ -72,7 +90,7 @@ export async function runPlan(
       stage: "plan",
       success: false,
       message: "Claude did not return valid JSON",
-      durationMs: 0,
+      durationMs: Date.now() - startTime,
       data: response.text,
     };
   }
@@ -93,6 +111,23 @@ export async function runPlan(
     priority: item.priority || 5,
   }));
 
+  // Validate that photo-dependent compositions have media assets
+  for (const item of items) {
+    if (compositionNeedsPhotos(item.compositionId) && item.mediaAssets.length === 0) {
+      log.warn(`${item.compositionId} needs photos but has no mediaAssets — plan may produce empty visuals`);
+    }
+  }
+
+  // Check for duplicate compositions in the batch
+  const compositionCounts: Record<string, number> = {};
+  for (const item of items) {
+    compositionCounts[item.compositionId] = (compositionCounts[item.compositionId] || 0) + 1;
+  }
+  const duplicates = Object.entries(compositionCounts).filter(([, count]) => count > 1);
+  if (duplicates.length > 0) {
+    log.warn(`Duplicate compositions in plan: ${duplicates.map(([id, n]) => `${id} x${n}`).join(", ")}`);
+  }
+
   const plan: ContentPlan = {
     id: randomUUID(),
     generatedAt: new Date().toISOString(),
@@ -108,7 +143,7 @@ export async function runPlan(
   log.info(`Content plan generated: ${items.length} videos`);
   log.divider();
   for (const item of items) {
-    log.info(`  ${item.compositionId} [${item.platform}]`);
+    log.info(`  ${item.compositionId} [${item.platform}] — priority:${item.priority} retention:${item.estimatedRetention}%`);
     log.info(`    Hook: ${item.hookStrategy}`);
     log.info(`    Post: ${item.postingTime}`);
     log.info(`    Hashtags: ${item.hashtags.slice(0, 5).join(" ")}`);
@@ -122,7 +157,7 @@ export async function runPlan(
       stage: "plan",
       success: true,
       message: `Generated plan with ${items.length} videos (dry run)`,
-      durationMs: 0,
+      durationMs: Date.now() - startTime,
       data: plan,
     };
   }
@@ -136,7 +171,7 @@ export async function runPlan(
     stage: "plan",
     success: true,
     message: `Generated and saved plan with ${items.length} videos`,
-    durationMs: 0,
+    durationMs: Date.now() - startTime,
     data: plan,
   };
 }
