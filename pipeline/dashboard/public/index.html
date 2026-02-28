@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Socialise Content Generator</title>
+  <style>
+    :root {
+      --orange: #FF6B35;
+      --blue: #004E89;
+      --yellow: #F7C948;
+      --dark: #1A1A2E;
+      --light: #F5F5F5;
+      --green: #22c55e;
+      --red: #ef4444;
+      --gray: #6b7280;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    header .badge {
+      background: var(--orange);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+
+    .tab:hover { color: var(--dark); }
+    .tab.active {
+      color: var(--orange);
+      border-bottom-color: var(--orange);
+      font-weight: 600;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--dark);
+    }
+
+    .card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--blue);
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--gray);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--orange);
+      box-shadow: 0 0 0 2px rgba(255,107,53,0.15);
+    }
+
+    button.btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-primary { background: var(--orange); color: white; }
+    .btn-primary:hover { background: #e55a2b; }
+    .btn-secondary { background: var(--blue); color: white; }
+    .btn-secondary:hover { background: #003a66; }
+
+    .stat-box {
+      text-align: center;
+      padding: 16px;
+    }
+
+    .stat-box .number {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .stat-box .label {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .results-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--gray);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .results-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .results-table tr:hover { background: #f9fafb; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 1px;
+    }
+
+    .tag-high { background: #fef3c7; color: #92400e; }
+    .tag-medium { background: #dbeafe; color: #1e40af; }
+    .tag-standard { background: #f3f4f6; color: #374151; }
+    .tag-tiktok { background: #1A1A2E; color: white; }
+    .tag-story { background: #8b5cf6; color: white; }
+    .tag-insta { background: #ec4899; color: white; }
+    .tag-photos { background: #f59e0b; color: white; }
+
+    .score-bar {
+      display: inline-block;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--orange);
+      vertical-align: middle;
+    }
+
+    .batch-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .batch-item:last-child { border-bottom: none; }
+
+    .batch-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray);
+    }
+
+    .empty-state p { margin-top: 8px; }
+
+    .comp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .comp-card {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .comp-card .name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #output-log {
+      background: var(--dark);
+      color: #a3e635;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Socialise Content Generator</h1>
+    <span class="badge">Dashboard</span>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="picker">Composition Picker</button>
+      <button class="tab" data-panel="batch">Batch Generator</button>
+      <button class="tab" data-panel="compositions">All Compositions</button>
+    </div>
+
+    <!-- OVERVIEW PANEL -->
+    <div id="overview" class="panel active">
+      <div class="grid-3">
+        <div class="card stat-box">
+          <div class="number" id="stat-content">--</div>
+          <div class="label">Content Items</div>
+        </div>
+        <div class="card stat-box">
+          <div class="number" id="stat-trends">--</div>
+          <div class="label">Active Trends</div>
+        </div>
+        <div class="card stat-box">
+          <div class="number" id="stat-renders">--</div>
+          <div class="label">Total Renders</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>Recent Plans</h2>
+          <div id="recent-plans">
+            <div class="empty-state"><p>Loading...</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Recent Renders</h2>
+          <div id="recent-renders">
+            <div class="empty-state"><p>Loading...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Quick Actions</h2>
+        <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
+          Use these tabs to test the composition picker and batch generator without running the full pipeline.
+          For rendering, open <strong>Remotion Studio</strong> alongside this dashboard.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="switchTab('picker')">Test Picker</button>
+          <button class="btn btn-primary" onclick="switchTab('batch')">Generate Batch</button>
+          <button class="btn btn-secondary" onclick="switchTab('compositions')">Browse Compositions</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PICKER PANEL -->
+    <div id="picker" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Test Composition Picker</h2>
+          <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
+            Type a content intent and see how the picker ranks compositions by relevance.
+          </p>
+
+          <label>Content Intent</label>
+          <input id="picker-intent" type="text" placeholder="e.g. pov hook about moving to Bristol" />
+
+          <label>Platform</label>
+          <select id="picker-platform">
+            <option value="tiktok">TikTok / Reels</option>
+            <option value="instagram-stories">Instagram Stories</option>
+            <option value="instagram-posts">Instagram Posts</option>
+          </select>
+
+          <label>Recently Used (comma-separated IDs, optional)</label>
+          <input id="picker-recent" type="text" placeholder="e.g. HookReel-TikTok, BeforeAfter-TikTok" />
+
+          <button class="btn btn-primary" onclick="runPicker()">Rank Compositions</button>
+        </div>
+
+        <div class="card">
+          <h2>Results</h2>
+          <div id="picker-results">
+            <div class="empty-state">
+              <p>Enter an intent and click "Rank Compositions" to see scored results.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATCH PANEL -->
+    <div id="batch" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Generate Diverse Batch</h2>
+          <p style="color:var(--gray);font-size:13px;margin-bottom:12px">
+            Generate a diverse batch of compositions optimised for variety and engagement.
+          </p>
+
+          <label>Number of Videos</label>
+          <input id="batch-count" type="number" value="7" min="1" max="15" />
+
+          <label>Platform</label>
+          <select id="batch-platform">
+            <option value="tiktok">TikTok / Reels</option>
+            <option value="instagram-stories">Instagram Stories</option>
+            <option value="instagram-posts">Instagram Posts</option>
+          </select>
+
+          <label>Recently Used (comma-separated, optional)</label>
+          <input id="batch-recent" type="text" placeholder="e.g. HookReel-TikTok" />
+
+          <button class="btn btn-primary" onclick="runBatch()">Generate Batch</button>
+        </div>
+
+        <div class="card">
+          <h2>Batch Results</h2>
+          <div id="batch-results">
+            <div class="empty-state">
+              <p>Click "Generate Batch" to see a diverse set of compositions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPOSITIONS PANEL -->
+    <div id="compositions" class="panel">
+      <div class="card">
+        <h2>All Compositions by Platform</h2>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn-primary" onclick="loadCompositions('tiktok')">TikTok / Reels</button>
+          <button class="btn btn-secondary" onclick="loadCompositions('instagram-stories')">Stories</button>
+          <button class="btn btn-secondary" onclick="loadCompositions('instagram-posts')">Posts</button>
+        </div>
+        <div id="comp-list">
+          <div class="empty-state"><p>Select a platform above.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Tab switching ---
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.panel));
+    });
+
+    function switchTab(panelId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-panel="${panelId}"]`)?.classList.add('active');
+      document.getElementById(panelId)?.classList.add('active');
+    }
+
+    // --- API helper ---
+    async function api(endpoint, body = {}) {
+      const res = await fetch(`/api/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      return res.json();
+    }
+
+    // --- Overview ---
+    async function loadOverview() {
+      const stats = await api('db/stats');
+
+      if (stats.available) {
+        document.getElementById('stat-content').textContent = stats.contentItems;
+        document.getElementById('stat-trends').textContent = stats.activeTrends;
+        document.getElementById('stat-renders').textContent = stats.totalRenders;
+
+        if (stats.recentPlans?.length > 0) {
+          document.getElementById('recent-plans').innerHTML = `
+            <table class="results-table">
+              <tr><th>ID</th><th>Generated</th><th>Status</th></tr>
+              ${stats.recentPlans.map(p => `
+                <tr>
+                  <td>${p.id.slice(0, 8)}...</td>
+                  <td>${new Date(p.generated_at).toLocaleDateString()}</td>
+                  <td>${p.status}</td>
+                </tr>
+              `).join('')}
+            </table>`;
+        } else {
+          document.getElementById('recent-plans').innerHTML =
+            '<div class="empty-state"><p>No plans yet. Use the pipeline to generate content plans.</p></div>';
+        }
+
+        if (stats.recentRenders?.length > 0) {
+          document.getElementById('recent-renders').innerHTML = `
+            <table class="results-table">
+              <tr><th>Composition</th><th>Status</th><th>Date</th></tr>
+              ${stats.recentRenders.map(r => `
+                <tr>
+                  <td>${r.composition_id}</td>
+                  <td>${r.status}</td>
+                  <td>${r.completed_at ? new Date(r.completed_at).toLocaleDateString() : '—'}</td>
+                </tr>
+              `).join('')}
+            </table>`;
+        } else {
+          document.getElementById('recent-renders').innerHTML =
+            '<div class="empty-state"><p>No renders yet. Run the pipeline to create videos.</p></div>';
+        }
+      } else {
+        document.getElementById('stat-content').textContent = '0';
+        document.getElementById('stat-trends').textContent = '0';
+        document.getElementById('stat-renders').textContent = '0';
+        document.getElementById('recent-plans').innerHTML =
+          `<div class="empty-state"><p>${stats.message}</p></div>`;
+        document.getElementById('recent-renders').innerHTML =
+          `<div class="empty-state"><p>${stats.message}</p></div>`;
+      }
+    }
+
+    // --- Picker ---
+    async function runPicker() {
+      const intent = document.getElementById('picker-intent').value.trim();
+      if (!intent) return;
+
+      const platform = document.getElementById('picker-platform').value;
+      const recentRaw = document.getElementById('picker-recent').value.trim();
+      const recentlyUsed = recentRaw ? recentRaw.split(',').map(s => s.trim()) : [];
+
+      const data = await api('picker/rank', { intent, platform, recentlyUsed });
+
+      if (data.length === 0) {
+        document.getElementById('picker-results').innerHTML =
+          '<div class="empty-state"><p>No compositions matched that intent.</p></div>';
+        return;
+      }
+
+      const maxScore = data[0].score;
+      document.getElementById('picker-results').innerHTML = `
+        <table class="results-table">
+          <tr><th>#</th><th>Composition</th><th>Score</th><th></th></tr>
+          ${data.map((r, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td><strong>${r.compositionId}</strong></td>
+              <td>${r.score}</td>
+              <td><span class="score-bar" style="width:${Math.max(4, (r.score / maxScore) * 120)}px"></span></td>
+            </tr>
+          `).join('')}
+        </table>
+        <p style="margin-top:12px;font-size:13px;color:var(--gray)">
+          Top pick: <strong>${data[0].compositionId}</strong> (score: ${data[0].score})
+        </p>`;
+    }
+
+    // Enter key triggers picker
+    document.getElementById('picker-intent')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') runPicker();
+    });
+
+    // --- Batch ---
+    async function runBatch() {
+      const count = parseInt(document.getElementById('batch-count').value) || 5;
+      const platform = document.getElementById('batch-platform').value;
+      const recentRaw = document.getElementById('batch-recent').value.trim();
+      const recentlyUsed = recentRaw ? recentRaw.split(',').map(s => s.trim()) : [];
+
+      const data = await api('batch', { count, platform, recentlyUsed });
+
+      if (!data.batch?.length) {
+        document.getElementById('batch-results').innerHTML =
+          '<div class="empty-state"><p>No compositions available for this platform.</p></div>';
+        return;
+      }
+
+      document.getElementById('batch-results').innerHTML = data.batch.map((id, i) => `
+        <div class="batch-item">
+          <div class="batch-num">${i + 1}</div>
+          <div>
+            <strong>${id}</strong>
+            ${i > 0 && id.replace(/-\w+$/, '') === data.batch[i-1].replace(/-\w+$/, '')
+              ? ' <span style="color:var(--red);font-size:12px">(consecutive repeat!)</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- Compositions ---
+    async function loadCompositions(platform) {
+      const data = await api('compositions', { platform });
+
+      document.getElementById('comp-list').innerHTML = `
+        <div class="comp-grid">
+          ${data.details.map(c => `
+            <div class="comp-card">
+              <div class="name">${c.id}</div>
+              ${c.needsPhotos ? '<span class="tag tag-photos">Needs Photos</span>' : ''}
+              ${c.id.endsWith('-TikTok') ? '<span class="tag tag-tiktok">TikTok</span>' : ''}
+              ${c.id.endsWith('-Story') ? '<span class="tag tag-story">Story</span>' : ''}
+              ${c.id.endsWith('-Insta') ? '<span class="tag tag-insta">Post</span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        <p style="margin-top:12px;font-size:13px;color:var(--gray)">
+          ${data.compositions.length} compositions for ${platform}
+        </p>`;
+    }
+
+    // --- Init ---
+    loadOverview();
+  </script>
+</body>
+</html>

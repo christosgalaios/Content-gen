@@ -13,7 +13,8 @@
     "pipeline:plan": "npx tsx pipeline/index.ts --stage plan",
     "pipeline:build": "npx tsx pipeline/index.ts --stage build",
     "pipeline:render": "npx tsx pipeline/index.ts --stage render",
-    "pipeline:dry-run": "npx tsx pipeline/index.ts --dry-run"
+    "pipeline:dry-run": "npx tsx pipeline/index.ts --dry-run",
+    "dashboard": "npx tsx pipeline/dashboard/server.ts"
   },
   "keywords": [],
   "author": "",
