@@ -3,12 +3,6 @@ name: Deploy Dashboard to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - 'docs-app/**'
-      - 'src/**'
-      - 'vite.docs.config.ts'
-      - 'package.json'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +35,9 @@ jobs:
 
       - name: Build docs app
         run: npm run build:docs
+
+      - name: Disable Jekyll
+        run: touch docs/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
