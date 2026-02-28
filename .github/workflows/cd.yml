@@ -1,0 +1,55 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx remotion compositions --quiet
+
+      - name: Generate release tag
+        id: tag
+        run: echo "tag=v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Get changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git tag --sort=-creatordate | head -1 || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            LOG=$(git log --oneline -20)
+          else
+            LOG=$(git log --oneline "$PREV_TAG"..HEAD)
+          fi
+          {
+            echo "log<<EOF"
+            echo "$LOG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body: |
+            ## Changes
+
+            ${{ steps.changelog.outputs.log }}
+          generate_release_notes: true
