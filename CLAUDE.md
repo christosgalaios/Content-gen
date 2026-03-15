@@ -1,3 +1,5 @@
+> **Cross-project rules:** See [`claude-shared`](https://github.com/christosgalaios/claude-shared) repo (`~/.claude/claude-shared/CLAUDE.md`). Run `bash setup.sh` on new machines.
+
 # Socialise Content Generator
 
 This is a **Remotion** project for generating social media video content for **The Super Socializers** (future rebrand: **Socialise.**).
